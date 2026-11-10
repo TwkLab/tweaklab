@@ -11,7 +11,7 @@ import {
   RotateCcw,
   Sparkles,
 } from "lucide-react";
-import HardwareViewer3D from "./HardwareViewer3D";
+import GpuViewer3D from "./GpuViewer3D";
 
 export default function Hero() {
   return (
@@ -19,7 +19,7 @@ export default function Hero() {
       {/* Background radial glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-twk-green/10 blur-[150px] rounded-full pointer-events-none -z-10" />
 
-      {/* Main Container - Scaled for wide PC screens and mobile */}
+      {/* Main Container */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Text Col (6 cols on wide screens) */}
@@ -88,17 +88,17 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Right Col: Interactive 3D Hardware Viewer (6 cols on wide screens) */}
+          {/* Right Col: Realistic 3D Graphics Card (GPU) */}
           <div className="lg:col-span-6 w-full space-y-3">
-            <HardwareViewer3D />
+            <GpuViewer3D />
 
             {/* Under-viewer metadata bar */}
-            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-twk-surface/70 border border-twk-border/60 text-[11px] font-mono text-twk-dim">
+            <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-twk-surface/70 border border-twk-border/60 text-[11px] font-mono text-twk-dim">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-twk-green" />
-                <span>Modelo Interativo 3D: Pressione e arraste com o mouse</span>
+                <span>Placa de Vídeo Gamer (GPU): Arraste para inspecionar conector PCIe, ventoinhas e backplate</span>
               </div>
-              <span className="text-twk-muted hidden sm:inline">Renderização WebGL 60FPS</span>
+              <span className="text-twk-muted hidden sm:inline">Renderização 3D 60FPS</span>
             </div>
           </div>
         </div>
