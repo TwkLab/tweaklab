@@ -53,48 +53,10 @@ Na **TweakLab**, atuamos com rigor técnico:
 
 ---
 
-## 🚀 Como Executar o Projeto
-
-### Pré-requisitos
-- **Node.js** v20 ou superior
-- **npm** ou **pnpm**
-
-### Passo a Passo
-
-```bash
-# 1. Clone o repositório
-git clone https://github.com/TwkLab/tweaklab.git
-
-# 2. Acesse a pasta do projeto
-cd tweaklab
-
-# 3. Instale as dependências
-npm install
-
-# 4. Inicie o servidor de desenvolvimento
-npm run dev
-```
-
-Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
-
-### Compilação para Produção
-
-```bash
-# Executa lint, checagem de tipos estritos e gera o build estático
-npm run build
-
-# Inicia o servidor em modo produção
-npm run start
-```
-
----
-
 ## 📁 Estrutura do Repositório
 
 ```
 tweaklab/
-├── .github/
-│   └── workflows/ci.yml       # Pipeline automatizada de validação e build
 ├── public/
 │   └── branding/              # Identidade visual oficial (2D, 3D badge e vetor)
 ├── src/
