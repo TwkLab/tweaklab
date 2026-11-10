@@ -1,7 +1,24 @@
 {
   "name": "tweaklab",
   "version": "0.1.0",
+  "description": "Plataforma de suporte técnico remoto, diagnósticos de estabilidade do Windows e otimização de latência para jogos.",
   "private": true,
+  "author": "TweakLab Team <twklab@outlook.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TwkLab/tweaklab.git"
+  },
+  "keywords": [
+    "windows",
+    "performance",
+    "gaming",
+    "latency",
+    "tweaklab",
+    "diagnostics",
+    "threejs",
+    "nextjs"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,19 +26,19 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@types/three": "^0.187.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
     "next": "^15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.0.2",
-    "three": "^0.187.0"
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@types/three": "^0.182.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.2",
     "tailwindcss": "^3.4.17",
