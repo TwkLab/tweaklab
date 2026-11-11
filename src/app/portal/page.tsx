@@ -11,18 +11,29 @@ import {
   ArrowRight,
   FileCheck2,
   AlertCircle,
+  User,
+  Sparkles,
 } from "lucide-react";
 import { initialTickets } from "@/data/mockTickets";
-import { Ticket, TicketStatus } from "@/types";
+import { Ticket, UserProfile } from "@/types";
 import TicketStatusBadge from "@/components/TicketStatusBadge";
 
 export default function PortalPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    // Load persisted tickets from localStorage if exists, fallback to initialTickets
+    // Load client user if logged in
+    const storedUser = localStorage.getItem("twk_client_user");
+    if (storedUser) {
+      try {
+        setCurrentUser(JSON.parse(storedUser));
+      } catch {}
+    }
+
+    // Load persisted tickets
     const stored = localStorage.getItem("twk_tickets");
     if (stored) {
       try {
@@ -32,7 +43,6 @@ export default function PortalPage() {
       }
     } else {
       setTickets(initialTickets);
-      localStorage.setItem("twk_tickets", JSON.stringify(initialTickets));
     }
   }, []);
 
@@ -64,8 +74,11 @@ export default function PortalPage() {
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-twk-border">
         <div className="space-y-1">
-          <div className="text-xs font-mono text-twk-green uppercase tracking-wider">
-            Área do Cliente • TweakLab
+          <div className="text-xs font-mono text-twk-green uppercase tracking-wider flex items-center gap-2">
+            <span>Área do Cliente • TweakLab</span>
+            {currentUser && (
+              <span className="text-twk-dim">| Olá, <strong className="text-twk-text">{currentUser.name}</strong></span>
+            )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-twk-text tracking-tight">
             Meus Chamados de Atendimento
@@ -75,13 +88,23 @@ export default function PortalPage() {
           </p>
         </div>
 
-        <Link
-          href="/portal/novo"
-          className="px-5 py-2.5 rounded-xl bg-twk-green hover:bg-twk-green-hover text-twk-bg font-bold text-xs uppercase tracking-wider shadow-twk-glow-sm hover:shadow-twk-glow transition-all flex items-center justify-center gap-2 self-start md:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Abrir Novo Chamado</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/portal/perfil"
+            className="px-4 py-2.5 rounded-xl bg-twk-surface hover:bg-twk-card border border-twk-border hover:border-twk-green/40 text-twk-text text-xs font-mono font-medium flex items-center gap-1.5 transition-all shadow-sm"
+          >
+            <User className="w-3.5 h-3.5 text-twk-green" />
+            <span>Meu Perfil & PC</span>
+          </Link>
+
+          <Link
+            href="/portal/novo"
+            className="px-5 py-2.5 rounded-xl bg-twk-green hover:bg-twk-green-hover text-twk-bg font-bold text-xs uppercase tracking-wider font-mono shadow-twk-glow-sm hover:shadow-twk-glow transition-all flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Abrir Novo Chamado</span>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Counter Cards */}
@@ -137,7 +160,7 @@ export default function PortalPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por código (ex: TWK-2026-001) ou hardware..."
+            placeholder="Buscar por código (ex: TWK-2026-...) ou hardware..."
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text placeholder-twk-dim focus:outline-none focus:border-twk-green/60 font-mono"
           />
         </div>
@@ -161,16 +184,27 @@ export default function PortalPage() {
       {/* Ticket List */}
       <div className="space-y-4">
         {filteredTickets.length === 0 ? (
-          <div className="twk-card rounded-2xl p-12 text-center space-y-3">
-            <div className="w-12 h-12 mx-auto rounded-full bg-twk-surface border border-twk-border flex items-center justify-center text-twk-dim">
-              <Search className="w-5 h-5" />
+          <div className="twk-card rounded-3xl p-12 text-center space-y-4">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-twk-surface border border-twk-border flex items-center justify-center text-twk-green shadow-twk-glow-sm">
+              <Plus className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-semibold text-twk-text">
-              Nenhum chamado encontrado
-            </h3>
-            <p className="text-xs text-twk-dim max-w-sm mx-auto">
-              Não encontramos nenhum chamado com os critérios informados.
-            </p>
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-twk-text">
+                Nenhum chamado aberto no momento
+              </h3>
+              <p className="text-xs text-twk-muted max-w-sm mx-auto leading-relaxed">
+                Você ainda não possui atendimentos registrados. Clique no botão abaixo para abrir seu primeiro chamado.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Link
+                href="/portal/novo"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-twk-green hover:bg-twk-green-hover text-twk-bg font-bold text-xs uppercase font-mono shadow-twk-glow transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Abrir Novo Chamado</span>
+              </Link>
+            </div>
           </div>
         ) : (
           filteredTickets.map((t) => (
@@ -229,7 +263,7 @@ export default function PortalPage() {
 
                 <Link
                   href={`/portal/chamado/${t.id}`}
-                  className="px-4 py-2 rounded-xl bg-twk-surface hover:bg-twk-card border border-twk-border hover:border-twk-green/40 text-twk-text group-hover:text-twk-green text-xs font-semibold flex items-center gap-1.5 transition-all"
+                  className="px-4 py-2 rounded-xl bg-twk-surface hover:bg-twk-card border border-twk-border hover:border-twk-green/40 text-twk-text group-hover:text-twk-green text-xs font-semibold flex items-center gap-1.5 transition-all font-mono"
                 >
                   <span>Detalhes do Chamado</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -242,4 +276,3 @@ export default function PortalPage() {
     </div>
   );
 }
-

@@ -51,6 +51,12 @@ export default function TechnicianWorkbenchPage() {
   const [techNotes, setTechNotes] = useState("");
 
   useEffect(() => {
+    const isAuth = localStorage.getItem("twk_admin_authenticated");
+    if (isAuth !== "true") {
+      window.location.href = "/admin";
+      return;
+    }
+
     const stored = localStorage.getItem("twk_tickets");
     let list: Ticket[] = [];
     if (stored) {

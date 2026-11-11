@@ -1,40 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
   AlertTriangle,
   Zap,
   Wrench,
-  HelpCircle,
   Cpu,
-  ShieldCheck,
   CheckCircle2,
+  UserCheck,
+  Sparkles,
+  LogIn,
 } from "lucide-react";
-import { Ticket, TicketCategory, TicketPriority } from "@/types";
+import { Ticket, TicketCategory, TicketPriority, UserProfile } from "@/types";
 import { initialTickets } from "@/data/mockTickets";
+import HardwareAutocomplete from "@/components/HardwareAutocomplete";
 
-export default function NewTicketPage() {
+function NewTicketContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [category, setCategory] = useState<TicketCategory>("otimizacao_jogos");
+  // Client Session State
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [loginName, setLoginName] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+
+  // Form State
+  const initialCategory = (searchParams?.get("categoria") as TicketCategory) || "otimizacao_jogos";
+  const [category, setCategory] = useState<TicketCategory>(initialCategory);
   const [priority, setPriority] = useState<TicketPriority>("alta");
-  const [customerName, setCustomerName] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  // Specs
+  // Hardware Specs
   const [cpu, setCpu] = useState("");
   const [gpu, setGpu] = useState("");
   const [ram, setRam] = useState("");
-  const [os, setOs] = useState("Windows 11 64-bit");
+  const [os, setOs] = useState("Windows 11 Pro 23H2 (64-bit)");
   const [storage, setStorage] = useState("");
 
   const [consent, setConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasImportedProfile, setHasImportedProfile] = useState(false);
+
+  // Load client user session
+  useEffect(() => {
+    const stored = localStorage.getItem("twk_client_user");
+    if (stored) {
+      try {
+        const user: UserProfile = JSON.parse(stored);
+        setCurrentUser(user);
+        if (user.device) {
+          if (user.device.cpu) setCpu(user.device.cpu);
+          if (user.device.gpu) setGpu(user.device.gpu);
+          if (user.device.ram) setRam(user.device.ram);
+          if (user.device.os) setOs(user.device.os);
+          if (user.device.storage) setStorage(user.device.storage);
+          setHasImportedProfile(true);
+        }
+      } catch {}
+    }
+  }, []);
+
+  const handleSimpleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginName.trim() || !loginEmail.trim()) return;
+
+    const user: UserProfile = {
+      id: "cli-" + loginEmail.replace(/[^a-zA-Z0-9]/g, ""),
+      name: loginName.trim(),
+      email: loginEmail.trim(),
+      device: {
+        cpu,
+        gpu,
+        ram,
+        os,
+        storage,
+      },
+      createdAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem("twk_client_user", JSON.stringify(user));
+    setCurrentUser(user);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +100,9 @@ export default function NewTicketPage() {
     const newId = `twk-t-${Date.now()}`;
     const newCode = `TWK-2026-${randomNum}`;
 
+    const clientName = currentUser?.name || loginName || "Cliente";
+    const clientEmail = currentUser?.email || loginEmail || "cliente@tweaklab.com";
+
     const newTicket: Ticket = {
       id: newId,
       code: newCode,
@@ -58,8 +111,8 @@ export default function NewTicketPage() {
       category,
       priority,
       status: "novo",
-      customerName: customerName || "Usuário Convidado (Beta)",
-      customerEmail: customerEmail || "usuario.beta@example.com",
+      customerName: clientName,
+      customerEmail: clientEmail,
       device: {
         cpu: cpu || "Não especificado",
         gpu: gpu || "Não especificado",
@@ -73,7 +126,7 @@ export default function NewTicketPage() {
         {
           id: `msg-${Date.now()}`,
           ticketId: newId,
-          senderName: customerName || "Cliente",
+          senderName: clientName,
           senderRole: "cliente",
           content: description,
           sentAt: now,
@@ -114,10 +167,79 @@ export default function NewTicketPage() {
     }, 400);
   };
 
+  // If client is not identified, require simple login first
+  if (!currentUser) {
+    return (
+      <div className="py-16 max-w-md mx-auto px-4 space-y-6">
+        <div>
+          <Link
+            href="/portal"
+            className="inline-flex items-center gap-1.5 text-xs font-mono text-twk-muted hover:text-twk-green"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Voltar ao Portal</span>
+          </Link>
+        </div>
+
+        <div className="twk-card rounded-2xl p-7 sm:p-8 space-y-6 shadow-2xl hud-corner">
+          <div className="text-center space-y-2">
+            <div className="w-12 h-12 mx-auto rounded-xl bg-twk-surface border border-twk-border flex items-center justify-center text-twk-green shadow-twk-glow-sm">
+              <LogIn className="w-6 h-6" />
+            </div>
+            <h1 className="text-xl font-bold text-twk-text">
+              Identificação do Cliente
+            </h1>
+            <p className="text-xs text-twk-muted leading-relaxed">
+              Para abrir um chamado e acompanhar o atendimento, informe seu nome e e-mail.
+            </p>
+          </div>
+
+          <form onSubmit={handleSimpleLogin} className="space-y-4 text-xs font-mono">
+            <div className="space-y-1.5">
+              <label className="text-twk-muted font-medium">Seu Nome / Apelido</label>
+              <input
+                type="text"
+                required
+                value={loginName}
+                onChange={(e) => setLoginName(e.target.value)}
+                placeholder="Ex: Lucas Mendonça"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-twk-surface border border-twk-border text-twk-text focus:outline-none focus:border-twk-green/60"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-twk-muted font-medium">Seu E-mail</label>
+              <input
+                type="email"
+                required
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="Ex: lucas@email.com"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-twk-surface border border-twk-border text-twk-text focus:outline-none focus:border-twk-green/60"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl bg-twk-green hover:bg-twk-green-hover text-twk-bg font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-twk-glow transition-all"
+            >
+              <span>Continuar para Abertura de Chamado</span>
+              <CheckCircle2 className="w-4 h-4" />
+            </button>
+          </form>
+
+          <div className="text-[11px] text-center text-twk-dim font-mono">
+            Sem senhas complexas durante a fase de testes.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-      {/* Back button */}
-      <div>
+      {/* Top back */}
+      <div className="flex items-center justify-between">
         <Link
           href="/portal"
           className="inline-flex items-center gap-1.5 text-xs font-mono text-twk-muted hover:text-twk-green transition-colors"
@@ -125,19 +247,31 @@ export default function NewTicketPage() {
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Voltar ao Portal</span>
         </Link>
+
+        {/* User identification bar */}
+        <div className="flex items-center gap-2.5 text-xs font-mono">
+          <span className="text-twk-dim">Conectado como:</span>
+          <span className="text-twk-green font-bold">{currentUser.name}</span>
+          <Link
+            href="/portal/perfil"
+            className="text-[11px] text-twk-dim hover:text-twk-text underline"
+          >
+            (Editar Perfil / PC)
+          </Link>
+        </div>
       </div>
 
       {/* Header */}
       <div className="space-y-2 pb-6 border-b border-twk-border">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-twk-surface border border-twk-border text-xs font-mono text-twk-green">
-          ABERTURA DE ATENDIMENTO BETA
+          ABERTURA DE ATENDIMENTO TÉCNICO
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-twk-text tracking-tight">
-          Solicitar Atendimento Técnico
+          Solicitar Atendimento Especializado
         </h1>
         <p className="text-xs sm:text-sm text-twk-muted leading-relaxed">
-          Preencha com o máximo de detalhes que souber. Não se preocupe se não souber
-          alguma especificação técnica do computador; nós ajudaremos a identificar durante a triagem.
+          Preencha com o problema enfrentado. As caixas de peças de computador possuem
+          auto-completar para agilizar o preenchimento.
         </p>
       </div>
 
@@ -219,43 +353,10 @@ export default function NewTicketPage() {
           </div>
         </div>
 
-        {/* Step 2: Contact Info */}
+        {/* Step 2: Problem Description */}
         <div className="space-y-4 pt-4 border-t border-twk-border/60">
           <label className="text-xs font-mono uppercase tracking-wider text-twk-text font-semibold">
-            2. Seus Dados de Identificação
-          </label>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs text-twk-muted font-medium">Seu Nome / Apelido</label>
-              <input
-                type="text"
-                required
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Ex: Lucas Mendonça"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text focus:outline-none focus:border-twk-green/60"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs text-twk-muted font-medium">E-mail para Notificações</label>
-              <input
-                type="email"
-                required
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                placeholder="Ex: lucas@exemplo.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text focus:outline-none focus:border-twk-green/60"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Step 3: Problem Description */}
-        <div className="space-y-4 pt-4 border-t border-twk-border/60">
-          <label className="text-xs font-mono uppercase tracking-wider text-twk-text font-semibold">
-            3. Descrição do Problema
+            2. Descrição do Problema
           </label>
 
           <div className="space-y-1.5">
@@ -294,7 +395,7 @@ export default function NewTicketPage() {
                   onClick={() => setPriority(p)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-mono uppercase transition-all border ${
                     priority === p
-                      ? "bg-twk-card border-twk-green text-twk-green font-bold"
+                      ? "bg-twk-card border-twk-green text-twk-green font-bold shadow-twk-glow-sm"
                       : "bg-twk-surface border-twk-border text-twk-dim"
                   }`}
                 >
@@ -305,64 +406,76 @@ export default function NewTicketPage() {
           </div>
         </div>
 
-        {/* Step 4: Hardware Specs */}
+        {/* Step 3: Hardware Specs with Autocomplete */}
         <div className="space-y-4 pt-4 border-t border-twk-border/60">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <label className="text-xs font-mono uppercase tracking-wider text-twk-text font-semibold flex items-center gap-1.5">
               <Cpu className="w-4 h-4 text-twk-green" />
-              <span>4. Peças do Computador (Informações Voluntárias)</span>
+              <span>3. Peças do Computador (Auto-Completar Ativo)</span>
             </label>
-            <span className="text-[11px] text-twk-dim">Ajuda a agilizar o diagnóstico</span>
+
+            {hasImportedProfile && (
+              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50 flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                Peças carregadas do seu Perfil
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs text-twk-muted">Processador (CPU)</label>
-              <input
-                type="text"
+              <label className="text-xs text-twk-muted font-mono">Processador (CPU)</label>
+              <HardwareAutocomplete
+                category="cpu"
                 value={cpu}
-                onChange={(e) => setCpu(e.target.value)}
-                placeholder="Ex: AMD Ryzen 7 5700X ou Intel i5-13600K"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text font-mono focus:outline-none focus:border-twk-green/60"
+                onChange={setCpu}
+                placeholder="Ex: Ryzen 7 5700X ou Core i5-13600K..."
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs text-twk-muted">Placa de Vídeo (GPU)</label>
-              <input
-                type="text"
+              <label className="text-xs text-twk-muted font-mono">Placa de Vídeo (GPU)</label>
+              <HardwareAutocomplete
+                category="gpu"
                 value={gpu}
-                onChange={(e) => setGpu(e.target.value)}
-                placeholder="Ex: NVIDIA RTX 3070 8GB ou RX 6700 XT"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text font-mono focus:outline-none focus:border-twk-green/60"
+                onChange={setGpu}
+                placeholder="Ex: RTX 4070 ou RX 7800 XT..."
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs text-twk-muted">Memória RAM</label>
-              <input
-                type="text"
+              <label className="text-xs text-twk-muted font-mono">Memória RAM</label>
+              <HardwareAutocomplete
+                category="ram"
                 value={ram}
-                onChange={(e) => setRam(e.target.value)}
-                placeholder="Ex: 32GB DDR4 3200MHz (2x16GB)"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text font-mono focus:outline-none focus:border-twk-green/60"
+                onChange={setRam}
+                placeholder="Ex: 32GB DDR4 3200MHz..."
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs text-twk-muted">Versão do Sistema Operacional</label>
-              <input
-                type="text"
+              <label className="text-xs text-twk-muted font-mono">Versão do Windows</label>
+              <HardwareAutocomplete
+                category="os"
                 value={os}
-                onChange={(e) => setOs(e.target.value)}
-                placeholder="Ex: Windows 11 Pro 23H2"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text font-mono focus:outline-none focus:border-twk-green/60"
+                onChange={setOs}
+                placeholder="Ex: Windows 11 Pro 23H2..."
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-xs text-twk-muted font-mono">Armazenamento (SSD / HD)</label>
+              <HardwareAutocomplete
+                category="storage"
+                value={storage}
+                onChange={setStorage}
+                placeholder="Ex: SSD NVMe 1TB M.2..."
               />
             </div>
           </div>
         </div>
 
-        {/* Step 5: Consent */}
+        {/* Step 4: Consent */}
         <div className="pt-4 border-t border-twk-border/60">
           <div className="p-4 rounded-xl bg-twk-card border border-twk-green/30 space-y-3">
             <div className="flex items-start gap-3">
@@ -382,14 +495,14 @@ export default function NewTicketPage() {
                 </strong>{" "}
                 Autorizo a equipe técnica da TweakLab a analisar as informações
                 técnicas fornecidas para elaboração do diagnóstico inicial. Compreendo
-                que na TweakLab nenhuma intervenção no sistema operacional é feita sem
-                autorização prévia e que toda alteração é reversível e auditável.
+                que nenhuma alteração no Windows é feita sem autorização prévia e que toda
+                intervenção é documentada e reversível.
               </label>
             </div>
           </div>
         </div>
 
-        {/* Submit Button */}
+        {/* Submit */}
         <div className="pt-2 flex items-center justify-between">
           <Link
             href="/portal"
@@ -401,7 +514,7 @@ export default function NewTicketPage() {
           <button
             type="submit"
             disabled={isSubmitting || !consent}
-            className="px-7 py-3 rounded-xl bg-twk-green hover:bg-twk-green-hover disabled:opacity-50 text-twk-bg font-bold text-xs uppercase tracking-wider shadow-twk-glow hover:shadow-twk-glow-lg transition-all flex items-center gap-2 cursor-pointer"
+            className="px-7 py-3 rounded-xl bg-twk-green hover:bg-twk-green-hover disabled:opacity-50 text-twk-bg font-bold text-xs uppercase tracking-wider shadow-twk-glow hover:shadow-twk-glow-lg transition-all flex items-center gap-2 cursor-pointer font-mono"
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>{isSubmitting ? "Enviando Chamado..." : "Confirmar & Abrir Chamado"}</span>
@@ -412,3 +525,16 @@ export default function NewTicketPage() {
   );
 }
 
+export default function NewTicketPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-twk-bg flex items-center justify-center text-twk-muted font-mono text-xs">
+          Carregando formulário do chamado...
+        </div>
+      }
+    >
+      <NewTicketContent />
+    </Suspense>
+  );
+}

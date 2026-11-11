@@ -25,6 +25,16 @@ export interface DeviceSpecs {
   motherboard?: string;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  discord?: string;
+  device?: DeviceSpecs;
+  createdAt: string;
+}
+
 export interface ServiceAction {
   id: string;
   ticketId: string;
@@ -97,4 +107,3 @@ export interface Ticket {
   completedAt?: string;
   technicianNotes?: string;
 }
-
