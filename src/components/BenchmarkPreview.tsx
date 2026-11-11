@@ -28,23 +28,23 @@ const cases: BenchmarkCase[] = [
   {
     id: "warzone",
     game: "Call of Duty: Warzone",
-    scenario: "Urzikstan • 1440p Competitivo • DLSS Qualidade",
+    scenario: "Urzikstan • 1080p Competitivo • DLSS / FidelityFX CAS",
     hardware: "Ryzen 7 5700X • RTX 3070 8GB • 32GB RAM",
-    resolution: "2560x1440",
+    resolution: "1920x1080",
     before: {
-      avgFps: 128,
-      low1Percent: 42,
-      frametimeMs: 14.8,
-      dpcPeakUs: 2450,
+      avgFps: 148,
+      low1Percent: 78,
+      frametimeMs: 13.5,
+      dpcPeakUs: 2150,
     },
     after: {
-      avgFps: 141,
-      low1Percent: 88,
-      frametimeMs: 7.1,
-      dpcPeakUs: 410,
+      avgFps: 188,
+      low1Percent: 142,
+      frametimeMs: 5.3,
+      dpcPeakUs: 380,
     },
     keyChange:
-      "Isolamento de DPC Latency do driver de rede + Limpeza de Shader Cache + Otimização de threads no adv_options.ini",
+      "Ajuste RendererWorkerCount = 8 no adv_options + ReBAR forçado no NVIDIA Inspector + XMP 3600MHz + DPC Latency fix",
   },
   {
     id: "cs2",
@@ -53,15 +53,15 @@ const cases: BenchmarkCase[] = [
     hardware: "i5-12400F • RTX 4060 8GB • 16GB DDR4",
     resolution: "1920x1080",
     before: {
-      avgFps: 245,
-      low1Percent: 95,
-      frametimeMs: 10.5,
+      avgFps: 240,
+      low1Percent: 110,
+      frametimeMs: 9.2,
       dpcPeakUs: 1890,
     },
     after: {
-      avgFps: 268,
-      low1Percent: 172,
-      frametimeMs: 4.8,
+      avgFps: 295,
+      low1Percent: 210,
+      frametimeMs: 3.4,
       dpcPeakUs: 320,
     },
     keyChange:
@@ -74,16 +74,16 @@ const cases: BenchmarkCase[] = [
     hardware: "Ryzen 5 5600 • RX 6700 XT 12GB • 16GB RAM",
     resolution: "1920x1080",
     before: {
-      avgFps: 102,
-      low1Percent: 38,
-      frametimeMs: 18.2,
+      avgFps: 115,
+      low1Percent: 52,
+      frametimeMs: 17.5,
       dpcPeakUs: 2100,
     },
     after: {
-      avgFps: 114,
-      low1Percent: 74,
-      frametimeMs: 9.3,
-      dpcPeakUs: 550,
+      avgFps: 152,
+      low1Percent: 112,
+      frametimeMs: 6.6,
+      dpcPeakUs: 520,
     },
     keyChange:
       "Reset de shader pipeline corrompido + Ajuste de alocação de memória virtual (Pagefile) em SSD NVMe",
@@ -116,7 +116,8 @@ export default function BenchmarkPreview() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-twk-surface border border-twk-border text-xs font-mono text-twk-green">
-            MEDIDAS REAIS DE DESEMPENHO
+            <BarChart3 className="w-3.5 h-3.5" />
+            EVIDÊNCIAS & MEDIDAS REAIS
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-twk-text">
             O impacto na estabilidade: Antes vs. Depois

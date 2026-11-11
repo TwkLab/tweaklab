@@ -44,7 +44,8 @@ export default function Faq() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-twk-surface border border-twk-border text-xs font-mono text-twk-green">
-            ESCLARECIMENTOS
+            <HelpCircle className="w-3.5 h-3.5" />
+            ESCLARECIMENTOS & FAQ
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-twk-text">
             Perguntas Frequentes

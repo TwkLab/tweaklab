@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { initialTickets } from "@/data/mockTickets";
 import { Ticket, ServiceAction, BenchmarkMetric, TicketStatus } from "@/types";
-import TicketStatusBadge from "@/components/TicketStatusBadge";
+import TicketStatusBadge, { getTicketTheme } from "@/components/TicketStatusBadge";
 
 export default function TechnicianWorkbenchPage() {
   const params = useParams();
@@ -191,6 +191,8 @@ export default function TechnicianWorkbenchPage() {
     saveTicketUpdates(updated);
   };
 
+  const theme = getTicketTheme(ticket.status);
+
   return (
     <div className="py-10 max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 space-y-8">
       {/* Top Bar */}
@@ -222,12 +224,19 @@ export default function TechnicianWorkbenchPage() {
       </div>
 
       {/* Ticket Header */}
-      <div className="twk-card rounded-2xl p-6 space-y-4">
+      <div
+        className={`rounded-2xl p-6 space-y-4 border transition-all ${theme.cardBorder} ${theme.cardAccentBorder} ${theme.cardBg} ${theme.cardGlow}`}
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-twk-border">
           <div>
-            <div className="flex items-center gap-2.5">
-              <span className="text-base font-bold font-mono text-twk-green">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-base font-bold font-mono text-twk-text">
                 {ticket.code}
+              </span>
+              <span
+                className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${theme.categoryBadge}`}
+              >
+                {theme.categoryLabel}
               </span>
               <TicketStatusBadge status={ticket.status} />
               <span className="text-xs text-twk-dim font-mono">

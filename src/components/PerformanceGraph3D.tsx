@@ -32,27 +32,27 @@ interface BenchmarkScenario {
 const scenarios: BenchmarkScenario[] = [
   {
     id: "warzone",
-    game: "Warzone (1440p Competitivo)",
+    game: "Warzone (1080p Competitivo)",
     scenario: "Urzikstan • Ryzen 7 5700X + RTX 3070",
-    before: { avgFps: 128, low1Percent: 42, frametimeMs: 14.8 },
-    after: { avgFps: 141, low1Percent: 88, frametimeMs: 7.1 },
-    highlight: "+109% no 1% Low • Spikes de frametime eliminados",
+    before: { avgFps: 148, low1Percent: 78, frametimeMs: 13.5 },
+    after: { avgFps: 188, low1Percent: 142, frametimeMs: 5.3 },
+    highlight: "+82% no 1% Low (78 → 142 FPS) • Média sobe de 148 para 188 FPS",
   },
   {
     id: "cs2",
     game: "Counter-Strike 2 (1080p Nativo)",
     scenario: "Mirage 10v10 • i5-12400F + RTX 4060",
-    before: { avgFps: 245, low1Percent: 95, frametimeMs: 10.5 },
-    after: { avgFps: 268, low1Percent: 172, frametimeMs: 4.8 },
-    highlight: "+81% no 1% Low • DPC latency reduzida para 320µs",
+    before: { avgFps: 240, low1Percent: 110, frametimeMs: 9.2 },
+    after: { avgFps: 295, low1Percent: 210, frametimeMs: 3.4 },
+    highlight: "+91% no 1% Low (110 → 210 FPS) • Média atinge 295 FPS",
   },
   {
     id: "finals",
     game: "The Finals (UE5 Destruction)",
     scenario: "Monaco 1080p • Ryzen 5 5600 + RX 6700 XT",
-    before: { avgFps: 102, low1Percent: 38, frametimeMs: 18.2 },
-    after: { avgFps: 114, low1Percent: 74, frametimeMs: 9.3 },
-    highlight: "+95% no 1% Low • Fim dos micro-congelamentos",
+    before: { avgFps: 115, low1Percent: 52, frametimeMs: 17.5 },
+    after: { avgFps: 152, low1Percent: 112, frametimeMs: 6.6 },
+    highlight: "+115% no 1% Low (52 → 112 FPS) • Fim dos micro-congelamentos",
   },
 ];
 

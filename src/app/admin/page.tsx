@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { initialTickets } from "@/data/mockTickets";
 import { Ticket, TicketStatus } from "@/types";
-import TicketStatusBadge from "@/components/TicketStatusBadge";
+import TicketStatusBadge, { getTicketTheme } from "@/components/TicketStatusBadge";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -75,13 +75,37 @@ export default function AdminPage() {
     localStorage.setItem("twk_tickets", JSON.stringify(updated));
   };
 
+  const countPendentes = tickets.filter(
+    (t) => t.status === "novo" || t.status === "aguardando_cliente"
+  ).length;
+  const countAtivos = tickets.filter((t) =>
+    ["triagem", "agendado", "em_atendimento", "aguardando_validacao"].includes(
+      t.status
+    )
+  ).length;
+  const countResolvidos = tickets.filter((t) => t.status === "concluido").length;
+
   const filtered = tickets.filter((t) => {
     const matchText =
       t.code.toLowerCase().includes(search.toLowerCase()) ||
       t.customerName.toLowerCase().includes(search.toLowerCase()) ||
       t.title.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "todos" ? true : t.status === filterStatus;
-    return matchText && matchStatus;
+
+    if (!matchText) return false;
+
+    if (filterStatus === "todos") return true;
+    if (filterStatus === "pendentes")
+      return t.status === "novo" || t.status === "aguardando_cliente";
+    if (filterStatus === "ativos")
+      return [
+        "triagem",
+        "agendado",
+        "em_atendimento",
+        "aguardando_validacao",
+      ].includes(t.status);
+    if (filterStatus === "resolvidos") return t.status === "concluido";
+    if (filterStatus === "cancelados") return t.status === "cancelado";
+    return t.status === filterStatus;
   });
 
   // Login Screen if not authenticated
@@ -184,32 +208,86 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-twk-dim absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filtrar por código, cliente ou problema..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text placeholder-twk-dim font-mono focus:outline-none focus:border-twk-green/60"
-          />
+      {/* Filter and Quick Category Tabs */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setFilterStatus("todos")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all border ${
+              filterStatus === "todos"
+                ? "bg-twk-surface border-twk-green text-twk-green font-bold shadow-twk-glow-sm"
+                : "bg-twk-surface/40 border-twk-border text-twk-muted hover:text-twk-text"
+            }`}
+          >
+            Todos ({tickets.length})
+          </button>
+          <button
+            onClick={() => setFilterStatus("pendentes")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all border flex items-center gap-1.5 ${
+              filterStatus === "pendentes"
+                ? "bg-amber-500/20 border-amber-500 text-amber-300 font-bold shadow-[0_0_15px_rgba(245,158,11,0.25)]"
+                : "bg-twk-surface/40 border-twk-border text-twk-muted hover:text-amber-300"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            Pendentes ({countPendentes})
+          </button>
+          <button
+            onClick={() => setFilterStatus("ativos")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all border flex items-center gap-1.5 ${
+              filterStatus === "ativos"
+                ? "bg-cyan-500/20 border-cyan-500 text-cyan-300 font-bold shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+                : "bg-twk-surface/40 border-twk-border text-twk-muted hover:text-cyan-300"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            Ativos / Em Andamento ({countAtivos})
+          </button>
+          <button
+            onClick={() => setFilterStatus("resolvidos")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-mono transition-all border flex items-center gap-1.5 ${
+              filterStatus === "resolvidos"
+                ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                : "bg-twk-surface/40 border-twk-border text-twk-muted hover:text-emerald-300"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            Resolvidos ({countResolvidos})
+          </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Filter className="w-3.5 h-3.5 text-twk-dim" />
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-muted font-mono focus:outline-none focus:border-twk-green/60"
-          >
-            <option value="todos">Todos os Status</option>
-            <option value="novo">Novo</option>
-            <option value="triagem">Triagem</option>
-            <option value="em_atendimento">Em Atendimento</option>
-            <option value="concluido">Concluído</option>
-          </select>
+        {/* Filter search and select */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 text-twk-dim absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filtrar por código, cliente ou problema..."
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text placeholder-twk-dim font-mono focus:outline-none focus:border-twk-green/60"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Filter className="w-3.5 h-3.5 text-twk-dim" />
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-muted font-mono focus:outline-none focus:border-twk-green/60"
+            >
+              <option value="todos">Todos os Status</option>
+              <option value="pendentes">Categoria: Pendentes</option>
+              <option value="ativos">Categoria: Ativos</option>
+              <option value="resolvidos">Categoria: Resolvidos</option>
+              <option value="novo">Status: Novo</option>
+              <option value="triagem">Status: Triagem</option>
+              <option value="em_atendimento">Status: Em Atendimento</option>
+              <option value="aguardando_validacao">Status: Em Validação</option>
+              <option value="concluido">Status: Concluído</option>
+              <option value="cancelado">Status: Cancelado</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -231,24 +309,31 @@ export default function AdminPage() {
             </div>
           </div>
         ) : (
-          filtered.map((t) => (
-            <div
-              key={t.id}
-              className="twk-card rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:border-twk-green/40 transition-all group"
-            >
-              <div className="space-y-3 flex-1">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="font-mono text-xs font-bold text-twk-green">
-                    {t.code}
-                  </span>
-                  <TicketStatusBadge status={t.status} size="sm" />
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-twk-surface border border-twk-border text-twk-dim uppercase">
-                    Prioridade: {t.priority}
-                  </span>
-                  <span className="text-[11px] font-mono text-twk-text">
-                    Cliente: <strong className="text-twk-green">{t.customerName}</strong>
-                  </span>
-                </div>
+          filtered.map((t) => {
+            const theme = getTicketTheme(t.status);
+            return (
+              <div
+                key={t.id}
+                className={`rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border transition-all ${theme.cardBorder} ${theme.cardAccentBorder} ${theme.cardBg} ${theme.cardGlow} group`}
+              >
+                <div className="space-y-3 flex-1">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="font-mono text-xs font-bold text-twk-text">
+                      {t.code}
+                    </span>
+                    <span
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${theme.categoryBadge}`}
+                    >
+                      {theme.categoryLabel}
+                    </span>
+                    <TicketStatusBadge status={t.status} size="sm" />
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-twk-surface border border-twk-border text-twk-dim uppercase">
+                      Prioridade: {t.priority}
+                    </span>
+                    <span className="text-[11px] font-mono text-twk-text">
+                      Cliente: <strong className="text-twk-green">{t.customerName}</strong>
+                    </span>
+                  </div>
 
                 <div className="space-y-1">
                   <Link
@@ -307,7 +392,8 @@ export default function AdminPage() {
                 </Link>
               </div>
             </div>
-          ))
+          );
+        })
         )}
       </div>
     </div>

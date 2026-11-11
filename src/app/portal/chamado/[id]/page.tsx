@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { initialTickets } from "@/data/mockTickets";
 import { Ticket, TicketMessage } from "@/types";
-import TicketStatusBadge from "@/components/TicketStatusBadge";
+import TicketStatusBadge, { getTicketTheme } from "@/components/TicketStatusBadge";
 
 export default function TicketDetailPage() {
   const params = useParams();
@@ -115,6 +115,7 @@ export default function TicketDetailPage() {
   };
 
   const currentStep = getStepProgress(ticket.status);
+  const theme = getTicketTheme(ticket.status);
 
   return (
     <div className="py-10 max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 space-y-8">
@@ -148,12 +149,19 @@ export default function TicketDetailPage() {
       </div>
 
       {/* Ticket Header Card */}
-      <div className="twk-card rounded-2xl p-6 sm:p-8 space-y-6">
+      <div
+        className={`rounded-2xl p-6 sm:p-8 space-y-6 border transition-all ${theme.cardBorder} ${theme.cardAccentBorder} ${theme.cardBg} ${theme.cardGlow}`}
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-twk-border">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="font-mono text-base font-extrabold text-twk-green">
+              <span className="font-mono text-base font-extrabold text-twk-text">
                 {ticket.code}
+              </span>
+              <span
+                className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${theme.categoryBadge}`}
+              >
+                {theme.categoryLabel}
               </span>
               <TicketStatusBadge status={ticket.status} />
               <span className="text-xs font-mono px-2 py-0.5 rounded bg-twk-surface border border-twk-border text-twk-dim uppercase">

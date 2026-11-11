@@ -13,6 +13,8 @@ import {
   ArrowRight,
   UserCheck,
   User,
+  BarChart3,
+  HelpCircle,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -68,8 +70,9 @@ export default function Navbar() {
           </Link>
           <Link
             href="/#evidencias"
-            className="hover:text-twk-green transition-colors"
+            className="hover:text-twk-green transition-colors flex items-center gap-1.5"
           >
+            <BarChart3 className="w-4 h-4 text-twk-green/80" />
             Evidências
           </Link>
           <Link
@@ -81,8 +84,9 @@ export default function Navbar() {
           </Link>
           <Link
             href="/#faq"
-            className="hover:text-twk-green transition-colors"
+            className="hover:text-twk-green transition-colors flex items-center gap-1.5"
           >
+            <HelpCircle className="w-4 h-4 text-twk-green/80" />
             FAQ
           </Link>
         </nav>
@@ -136,40 +140,53 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       {isOpen && (
         <div className="md:hidden border-b border-twk-border bg-twk-surface/95 px-4 pt-3 pb-5 space-y-3">
-          <div className="flex flex-col space-y-2 text-sm font-medium">
+          <div className="flex flex-col space-y-1.5 text-sm font-medium">
             <Link
               href="/#principios"
               onClick={() => setIsOpen(false)}
-              className="px-3 py-2 rounded-md hover:bg-twk-card text-twk-muted hover:text-twk-green"
+              className="px-3 py-2 rounded-lg hover:bg-twk-card text-twk-muted hover:text-twk-green flex items-center gap-2"
             >
+              <ShieldCheck className="w-4 h-4 text-twk-green/80" />
               Princípios Éticos
             </Link>
             <Link
               href="/#servicos"
               onClick={() => setIsOpen(false)}
-              className="px-3 py-2 rounded-md hover:bg-twk-card text-twk-muted hover:text-twk-green"
+              className="px-3 py-2 rounded-lg hover:bg-twk-card text-twk-muted hover:text-twk-green flex items-center gap-2"
             >
+              <Layers className="w-4 h-4 text-twk-green/80" />
               Serviços Oferecidos
             </Link>
             <Link
               href="/#metodologia"
               onClick={() => setIsOpen(false)}
-              className="px-3 py-2 rounded-md hover:bg-twk-card text-twk-muted hover:text-twk-green"
+              className="px-3 py-2 rounded-lg hover:bg-twk-card text-twk-muted hover:text-twk-green flex items-center gap-2"
             >
+              <Activity className="w-4 h-4 text-twk-green/80" />
               Metodologia de 5 Passos
+            </Link>
+            <Link
+              href="/#evidencias"
+              onClick={() => setIsOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-twk-card text-twk-muted hover:text-twk-green flex items-center gap-2"
+            >
+              <BarChart3 className="w-4 h-4 text-twk-green/80" />
+              Evidências & Benchmarks
             </Link>
             <Link
               href="/portal/perfil"
               onClick={() => setIsOpen(false)}
-              className="px-3 py-2 rounded-md hover:bg-twk-card text-twk-green font-semibold"
+              className="px-3 py-2 rounded-lg hover:bg-twk-card text-twk-green font-semibold flex items-center gap-2"
             >
+              <User className="w-4 h-4 text-twk-green/80" />
               Meu Perfil & Peças do PC
             </Link>
             <Link
               href="/#faq"
               onClick={() => setIsOpen(false)}
-              className="px-3 py-2 rounded-md hover:bg-twk-card text-twk-muted hover:text-twk-green"
+              className="px-3 py-2 rounded-lg hover:bg-twk-card text-twk-muted hover:text-twk-green flex items-center gap-2"
             >
+              <HelpCircle className="w-4 h-4 text-twk-green/80" />
               Dúvidas Frequentes (FAQ)
             </Link>
           </div>
