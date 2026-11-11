@@ -6,7 +6,7 @@ import AmbientBackground3D from "@/components/AmbientBackground3D";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://twklab.com"),
-  title: "TweakLab (TWK) — Suporte & Performance com Evidências",
+  title: "TweakLab — Suporte & Performance com Evidências",
   description:
     "Atendimento técnico remoto especializado em computadores, Windows e desempenho em jogos. Diagnósticos baseados em evidências, medições antes/depois e transparência total.",
   keywords: [
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "TweakLab (TWK) — Diagnóstico & Otimização Windows com Evidências",
+    title: "TweakLab — Diagnóstico & Otimização Windows com Evidências",
     description:
       "Sem promessas milagrosas. Diagnosticar antes de otimizar, medir antes e depois com testes reproduzíveis e reversibilidade documentada.",
     url: "https://twklab.com",
