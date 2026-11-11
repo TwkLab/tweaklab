@@ -29,6 +29,9 @@
     <SolidColorBrush x:Key="TwkAlertBrush" Color="{StaticResource TwkAlertColor}" />
     <SolidColorBrush x:Key="TwkErrorBrush" Color="{StaticResource TwkErrorColor}" />
 
+    <!-- Converters -->
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
     <!-- Estilo de Botão Primário Neon -->
     <Style x:Key="TwkPrimaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource TwkGreenBrush}" />
