@@ -35,3 +35,10 @@ next-env.d.ts
 
 
 .vercel
+
+# .NET / Visual Studio
+**/bin/
+**/obj/
+*.user
+*.suo
+.vs/

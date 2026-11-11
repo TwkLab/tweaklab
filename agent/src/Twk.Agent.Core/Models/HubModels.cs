@@ -11,7 +11,12 @@ public record LiveMetrics(
     double? GpuUsagePercent,
     double? GpuTemperatureC,
     string? GpuName,
-    DateTime UpdatedAtUtc
+    DateTime UpdatedAtUtc,
+    double? DiskUsagePercent = null,
+    double? DiskFreeGb = null,
+    double? DiskTotalGb = null,
+    string? DiskFormatted = null,
+    string? UptimeFormatted = null
 );
 
 public record TechnicianTool(
@@ -22,7 +27,9 @@ public record TechnicianTool(
     string OfficialSiteUrl,
     string DownloadUrl,
     string RecommendedUse,
-    string IconKey
+    string IconKey,
+    bool IsInstalled = false,
+    string? ExecutablePath = null
 );
 
 public record AgentUserProfile(

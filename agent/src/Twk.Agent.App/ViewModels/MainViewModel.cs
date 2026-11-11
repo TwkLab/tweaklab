@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +17,7 @@ using Twk.Agent.Core.Models;
 using Twk.Agent.Core.Services;
 using Twk.Agent.Infrastructure.Services;
 using Twk.Agent.Windows.Collectors;
+using Twk.Agent.Windows.Services;
 
 namespace Twk.Agent.App.ViewModels;
 
@@ -28,7 +31,7 @@ public class MainViewModel : INotifyPropertyChanged
     private CancellationTokenSource? _cts;
 
     // View Navigation
-    private int _selectedTabIndex = 0; // 0 = Visao Geral & Hardware, 1 = Monitoramento em Tempo Real, 2 = Loja de Ferramentas / Tecnico, 3 = Minha Conta & Sync
+    private int _selectedTabIndex = 0; // 0 = Telemetria, 1 = Triagem, 2 = Ferramentas, 3 = Conta
 
     // State
     private bool _isCollecting;
@@ -51,8 +54,15 @@ public class MainViewModel : INotifyPropertyChanged
     private string _cpuTempFormatted = "-- °C";
     private double _ramUsage;
     private string _ramUsageFormatted = "-- GB / -- GB";
-    private string _gpuName = "Detectando...";
-    private string _gpuTempFormatted = "-- °C";
+    private string _gpuName = "Detectando GPU...";
+    private double _diskUsage;
+    private string _diskFormatted = "-- GB livres";
+    private string _uptimeFormatted = "--";
+
+    // Tool Store Filtering & Search
+    private string _searchQuery = "";
+    private string _selectedCategory = "Todas";
+    private readonly List<TechnicianTool> _allTools;
 
     public MainViewModel(IHardwareCollector collector, IEvidenceSerializer serializer)
     {
@@ -61,35 +71,109 @@ public class MainViewModel : INotifyPropertyChanged
         _telemetryService = new WindowsLiveTelemetryService();
         _cloudSyncService = new CloudSyncService();
 
-        Tools = new ObservableCollection<TechnicianTool>(TechnicianToolCatalog.GetTools());
+        // 1. Load tools and detect installed executables
+        var baseTools = TechnicianToolCatalog.GetTools();
+        _allTools = ToolDetector.DetectInstalledTools(baseTools);
+        FilteredTools = new ObservableCollection<TechnicianTool>(_allTools);
 
-        // Setup Commands
+        // 2. Categories
+        Categories = new ObservableCollection<string>(new[]
+        {
+            "Todas",
+            "Acesso Remoto",
+            "Telemetria & Sensores",
+            "Diagnóstico de Hardware",
+            "Benchmark & Frametimes",
+            "Monitoramento & GPU",
+            "Limpeza de Drivers",
+            "Estresse & Estabilidade",
+            "Armazenamento & Limpeza",
+            "Crash Dump & Blue Screen"
+        });
+
+        // 3. Setup Commands
         CollectCommand = new RelayCommand(async _ => await StartCollectionAsync(), _ => HasConsent && !IsCollecting);
         CancelCommand = new RelayCommand(_ => CancelCollection(), _ => IsCollecting);
         ExportCommand = new RelayCommand(_ => ExportEvidence(), _ => Inventory != null);
+        CopyDigestCommand = new RelayCommand(_ => CopyDigestToClipboard(), _ => !string.IsNullOrEmpty(EvidenceDigest));
         LoginCommand = new RelayCommand(_ => PerformLogin(), _ => !string.IsNullOrWhiteSpace(UserEmail));
         LogoutCommand = new RelayCommand(_ => PerformLogout());
         SyncCloudCommand = new RelayCommand(async _ => await SyncWithCloudAsync(), _ => IsLoggedIn && Inventory != null && !IsSyncing);
-        OpenToolUrlCommand = new RelayCommand(url => OpenExternalUrl(url?.ToString()));
+        OpenToolCommand = new RelayCommand(toolObj => LaunchOrDownloadTool(toolObj as TechnicianTool));
+        OpenToolSiteCommand = new RelayCommand(url => OpenExternalUrl(url?.ToString()));
+        OpenPortalCommand = new RelayCommand(_ => OpenExternalUrl("https://tweaklab-lac.vercel.app/portal"));
 
-        // Check local saved user
+        // 4. Restore local session
         LoadSavedUser();
 
-        // Setup Live Telemetry Timer (every 1.5s)
+        // 5. Setup Live Telemetry Timer (every 1.5s)
         _telemetryTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1.5)
         };
         _telemetryTimer.Tick += async (s, e) => await UpdateTelemetryTickAsync();
         _telemetryTimer.Start();
+
+        // Prime first snapshot immediately
+        _ = UpdateTelemetryTickAsync();
     }
 
-    public ObservableCollection<TechnicianTool> Tools { get; }
+    public ObservableCollection<TechnicianTool> FilteredTools { get; }
+    public ObservableCollection<string> Categories { get; }
 
     public int SelectedTabIndex
     {
         get => _selectedTabIndex;
         set => SetField(ref _selectedTabIndex, value);
+    }
+
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            if (SetField(ref _searchQuery, value))
+            {
+                ApplyToolFilter();
+            }
+        }
+    }
+
+    public string SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            if (SetField(ref _selectedCategory, value))
+            {
+                ApplyToolFilter();
+            }
+        }
+    }
+
+    private void ApplyToolFilter()
+    {
+        var query = (SearchQuery ?? "").Trim().ToLowerInvariant();
+        var cat = SelectedCategory ?? "Todas";
+
+        var filtered = _allTools.Where(t =>
+        {
+            bool matchesCat = cat == "Todas" || t.Category.Equals(cat, StringComparison.OrdinalIgnoreCase);
+            if (!matchesCat) return false;
+
+            if (string.IsNullOrEmpty(query)) return true;
+
+            return t.Name.ToLowerInvariant().Contains(query) ||
+                   t.Description.ToLowerInvariant().Contains(query) ||
+                   t.RecommendedUse.ToLowerInvariant().Contains(query) ||
+                   t.Category.ToLowerInvariant().Contains(query);
+        }).ToList();
+
+        FilteredTools.Clear();
+        foreach (var tool in filtered)
+        {
+            FilteredTools.Add(tool);
+        }
     }
 
     public bool HasConsent
@@ -181,13 +265,7 @@ public class MainViewModel : INotifyPropertyChanged
     public bool IsSyncing
     {
         get => _isSyncing;
-        private set
-        {
-            if (SetField(ref _isSyncing, value))
-            {
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
+        private set => SetField(ref _isSyncing, value);
     }
 
     public string SyncStatusMessage
@@ -227,27 +305,47 @@ public class MainViewModel : INotifyPropertyChanged
         private set => SetField(ref _gpuName, value);
     }
 
-    public string GpuTempFormatted
+    public double DiskUsage
     {
-        get => _gpuTempFormatted;
-        private set => SetField(ref _gpuTempFormatted, value);
+        get => _diskUsage;
+        private set => SetField(ref _diskUsage, value);
+    }
+
+    public string DiskFormatted
+    {
+        get => _diskFormatted;
+        private set => SetField(ref _diskFormatted, value);
+    }
+
+    public string UptimeFormatted
+    {
+        get => _uptimeFormatted;
+        private set => SetField(ref _uptimeFormatted, value);
     }
 
     // Commands
     public ICommand CollectCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand ExportCommand { get; }
+    public ICommand CopyDigestCommand { get; }
     public ICommand LoginCommand { get; }
     public ICommand LogoutCommand { get; }
     public ICommand SyncCloudCommand { get; }
-    public ICommand OpenToolUrlCommand { get; }
+    public ICommand OpenToolCommand { get; }
+    public ICommand OpenToolSiteCommand { get; }
+    public ICommand OpenPortalCommand { get; }
 
     private void PerformLogin()
     {
         if (string.IsNullOrWhiteSpace(UserEmail)) return;
         IsLoggedIn = true;
-        SyncStatusMessage = "Conectado. Pronto para sincronizar suas evidências com a nuvem TweakLab.";
         SaveUserLocal();
+        SyncStatusMessage = $"Autenticado como {UserEmail}. Pronto para sincronizar.";
+
+        if (Inventory != null)
+        {
+            _ = SyncWithCloudAsync();
+        }
     }
 
     private void PerformLogout()
@@ -264,21 +362,32 @@ public class MainViewModel : INotifyPropertyChanged
         catch {}
     }
 
-    private async Task SyncWithCloudAsync()
+    public async Task SyncWithCloudAsync()
     {
-        if (!IsLoggedIn || _currentEnvelope == null) return;
+        if (string.IsNullOrWhiteSpace(UserEmail) || string.IsNullOrEmpty(SerializedEvidence))
+        {
+            SyncStatusMessage = "Faça login e colete uma evidência antes de sincronizar.";
+            return;
+        }
 
         IsSyncing = true;
-        SyncStatusMessage = "Enviando evidências para o portal TweakLab...";
+        SyncStatusMessage = "Transmitindo evidência criptografada para tweaklab.com...";
 
         try
         {
-            var res = await _cloudSyncService.SyncEvidenceAsync(UserEmail, _currentEnvelope);
-            SyncStatusMessage = res.Message;
+            var res = await _cloudSyncService.SyncEvidenceAsync(UserEmail, _currentEnvelope ?? (object)SerializedEvidence);
+            if (res.Success)
+            {
+                SyncStatusMessage = $"✓ {res.Message}";
+            }
+            else
+            {
+                SyncStatusMessage = $"Aviso ao sincronizar: {res.Message}";
+            }
         }
         catch (Exception ex)
         {
-            SyncStatusMessage = $"Falha no envio: {ex.Message}";
+            SyncStatusMessage = $"Erro de rede na sincronização: {ex.Message}";
         }
         finally
         {
@@ -290,52 +399,72 @@ public class MainViewModel : INotifyPropertyChanged
     {
         try
         {
-            var snapshot = await _telemetryService.GetSnapshotAsync();
+            var snapshot = await Task.Run(() => _telemetryService.GetSnapshotAsync());
+
             CpuUsage = snapshot.CpuUsagePercent;
-            CpuTempFormatted = snapshot.CpuTemperatureC.HasValue ? $"{snapshot.CpuTemperatureC.Value:F1} °C" : "Normal (WMI ACPI N/D)";
+            CpuTempFormatted = snapshot.CpuTemperatureC.HasValue ? $"{snapshot.CpuTemperatureC.Value:F1} °C" : "ACPI Normal";
             RamUsage = snapshot.RamUsagePercent;
             RamUsageFormatted = $"{snapshot.RamUsedGb:F1} GB / {snapshot.RamTotalGb:F1} GB ({snapshot.RamUsagePercent:F0}%)";
+
             if (!string.IsNullOrEmpty(snapshot.GpuName))
             {
                 GpuName = snapshot.GpuName;
             }
-            GpuTempFormatted = "Monitor via HWiNFO64";
+
+            if (snapshot.DiskUsagePercent.HasValue)
+            {
+                DiskUsage = snapshot.DiskUsagePercent.Value;
+            }
+            if (!string.IsNullOrEmpty(snapshot.DiskFormatted))
+            {
+                DiskFormatted = snapshot.DiskFormatted;
+            }
+            if (!string.IsNullOrEmpty(snapshot.UptimeFormatted))
+            {
+                UptimeFormatted = snapshot.UptimeFormatted;
+            }
         }
         catch
         {
-            // silent ignore
+            // Fail silently on telemetry tick to never disrupt the user
         }
     }
 
     public async Task StartCollectionAsync()
     {
-        if (!HasConsent || IsCollecting) return;
+        if (!HasConsent)
+        {
+            StatusMessage = "Consentimento obrigatório para realizar a triagem.";
+            return;
+        }
 
         IsCollecting = true;
-        StatusMessage = "Lendo WMI e barramentos do sistema...";
+        StatusMessage = "Iniciando varredura auditável de hardware via WMI...";
         _cts = new CancellationTokenSource();
 
         try
         {
-            var inventory = await _collector.CollectAsync(_cts.Token);
-            Inventory = inventory;
+            StatusMessage = "Lendo informações da CPU, BIOS e Placa-mãe...";
+            var inv = await Task.Run(() => _collector.CollectAsync(_cts.Token), _cts.Token);
+            Inventory = inv;
 
+            StatusMessage = "Calculando assinatura de integridade SHA-256...";
             var consentRecord = new ConsentReceipt(
                 NoticeVersion: "1.0",
-                Categories: new[] { "hardware_inventory", "os_version", "disk_health" },
+                Categories: new[] { "cpu", "ram", "gpu", "storage", "os", "motherboard" },
                 ConfirmedAtUtc: DateTime.UtcNow,
-                PayloadDigest: "calc-pending"
+                PayloadDigest: ""
             );
 
             var envelope = new EvidenceEnvelope<HardwareInventory>(
                 SchemaVersion: 1,
                 ClientEvidenceId: Guid.NewGuid(),
-                AgentVersion: "0.2.0",
+                AgentVersion: "1.0.0-hub",
                 LinkId: null,
                 CapturedAtUtc: DateTime.UtcNow,
                 Kind: "hardware_inventory",
                 Consent: consentRecord,
-                Payload: inventory
+                Payload: inv
             );
 
             var initialJson = _serializer.SerializeSanitized(envelope);
@@ -350,7 +479,7 @@ public class MainViewModel : INotifyPropertyChanged
             SerializedEvidence = _serializer.SerializeSanitized(sealedEnvelope);
             EvidenceDigest = computedDigest;
 
-            StatusMessage = $"Triagem concluída com sucesso! Digest: {computedDigest[..18]}...";
+            StatusMessage = $"✓ Triagem concluída com sucesso! Assinatura: {computedDigest[..18]}...";
 
             // Auto-sync if user is logged in
             if (IsLoggedIn && !string.IsNullOrWhiteSpace(UserEmail))
@@ -379,6 +508,40 @@ public class MainViewModel : INotifyPropertyChanged
         _cts?.Cancel();
     }
 
+    private void CopyDigestToClipboard()
+    {
+        if (string.IsNullOrEmpty(EvidenceDigest)) return;
+        try
+        {
+            Clipboard.SetText(EvidenceDigest);
+            StatusMessage = "✓ Hash SHA-256 copiado para a Área de Transferência!";
+        }
+        catch {}
+    }
+
+    private void LaunchOrDownloadTool(TechnicianTool? tool)
+    {
+        if (tool == null) return;
+
+        if (tool.IsInstalled && !string.IsNullOrEmpty(tool.ExecutablePath) && File.Exists(tool.ExecutablePath))
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = tool.ExecutablePath,
+                    UseShellExecute = true
+                });
+                StatusMessage = $"Iniciando {tool.Name}...";
+                return;
+            }
+            catch {}
+        }
+
+        // Otherwise open download link
+        OpenExternalUrl(tool.DownloadUrl);
+    }
+
     private void ExportEvidence()
     {
         if (string.IsNullOrEmpty(SerializedEvidence)) return;
@@ -395,7 +558,7 @@ public class MainViewModel : INotifyPropertyChanged
             try
             {
                 File.WriteAllText(sfd.FileName, SerializedEvidence);
-                StatusMessage = $"Evidência exportada com sucesso em: {Path.GetFileName(sfd.FileName)}";
+                StatusMessage = $"Evidência exportada em: {Path.GetFileName(sfd.FileName)}";
             }
             catch (Exception ex)
             {
@@ -415,10 +578,7 @@ public class MainViewModel : INotifyPropertyChanged
                 UseShellExecute = true
             });
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Não foi possível abrir o link: {ex.Message}", "TweakLab", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+        catch {}
     }
 
     private void SaveUserLocal()
@@ -448,7 +608,7 @@ public class MainViewModel : INotifyPropertyChanged
                     if (!string.IsNullOrWhiteSpace(UserEmail))
                     {
                         IsLoggedIn = true;
-                        SyncStatusMessage = "Conectado automaticamente com a conta salva.";
+                        SyncStatusMessage = $"Conectado com {UserEmail}";
                     }
                 }
             }

@@ -32,4 +32,27 @@ public partial class MainWindow : Window
             }
         }
     }
+
+    private void CategoryChip_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Content is string category && DataContext is MainViewModel vm)
+        {
+            vm.SelectedCategory = category;
+        }
+    }
+
+    private void BtnMinimize_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void BtnMaximize_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    }
+
+    private void BtnClose_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
 }
