@@ -76,7 +76,7 @@
                                             <Setter Property="Foreground" Value="{StaticResource TwkGreenBrush}" />
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource TwkTextColor}" />
+                                            <Setter Property="Foreground" Value="{StaticResource TwkTextBrush}" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
