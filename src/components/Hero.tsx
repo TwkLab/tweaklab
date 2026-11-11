@@ -6,12 +6,11 @@ import {
   ShieldCheck,
   CheckCircle2,
   Terminal,
-  Cpu,
   BarChart3,
   RotateCcw,
   Sparkles,
 } from "lucide-react";
-import GpuViewer3D from "./GpuViewer3D";
+import PerformanceGraph3D from "./PerformanceGraph3D";
 
 export default function Hero() {
   return (
@@ -22,7 +21,7 @@ export default function Hero() {
       {/* Main Container */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Text Col (6 cols on wide screens) */}
+          {/* Left Text Col */}
           <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
             {/* Beta pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-twk-surface border border-twk-border text-xs text-twk-muted shadow-twk-glow-sm">
@@ -88,15 +87,15 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Right Col: Realistic 3D Graphics Card (GPU) */}
+          {/* Right Col: 3D Performance Benchmark Visualizer */}
           <div className="lg:col-span-6 w-full space-y-3">
-            <GpuViewer3D />
+            <PerformanceGraph3D />
 
             {/* Under-viewer metadata bar */}
             <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-twk-surface/70 border border-twk-border/60 text-[11px] font-mono text-twk-dim">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-twk-green" />
-                <span>Placa de Vídeo Gamer (GPU): Arraste para inspecionar conector PCIe, ventoinhas e backplate</span>
+                <span>Gráfico Volumétrico 3D: Compare o 1% Low e a estabilização de frametime</span>
               </div>
               <span className="text-twk-muted hidden sm:inline">Renderização 3D 60FPS</span>
             </div>
