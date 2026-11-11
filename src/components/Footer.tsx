@@ -10,14 +10,19 @@ export default function Footer() {
           {/* Brand Col */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="relative h-9 w-28 flex items-center">
-                <Image
-                  src="/branding/twk-symbol.png"
-                  alt="TWK"
-                  width={120}
-                  height={36}
-                  className="object-contain h-full w-auto drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]"
-                />
+              <div className="flex flex-col items-center justify-center -space-y-0.5">
+                <div className="relative h-9 w-28 flex items-center justify-center">
+                  <Image
+                    src="/branding/twk-symbol.png"
+                    alt="TWK"
+                    width={120}
+                    height={36}
+                    className="object-contain h-full w-auto drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]"
+                  />
+                </div>
+                <span className="text-[9px] font-mono font-extrabold text-twk-green tracking-[0.45em] uppercase pl-1 drop-shadow-[0_0_8px_rgba(0,255,136,0.5)]">
+                  LAB
+                </span>
               </div>
             </div>
             <p className="text-xs text-twk-dim leading-relaxed">

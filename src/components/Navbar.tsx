@@ -23,12 +23,9 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-twk-border/80 bg-twk-bg/90 backdrop-blur-md">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 h-20 flex items-center justify-between">
-        {/* Brand / Logo: LAB written on top of TWK to complete TweakLab name */}
+        {/* Brand / Logo: TWK symbol with LAB written below */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex flex-col items-center justify-center -space-y-1 transition-transform group-hover:scale-105">
-            <span className="text-[10px] sm:text-[11px] font-mono font-black text-twk-green tracking-[0.42em] uppercase pl-1 drop-shadow-[0_0_10px_rgba(0,255,136,0.7)]">
-              LAB
-            </span>
+          <div className="flex flex-col items-center justify-center -space-y-0.5 transition-transform group-hover:scale-105">
             <div className="relative h-9 w-28 sm:h-11 sm:w-36 flex items-center justify-center">
               <Image
                 src="/branding/twk-symbol.png"
@@ -39,6 +36,9 @@ export default function Navbar() {
                 priority
               />
             </div>
+            <span className="text-[10px] sm:text-[11px] font-mono font-extrabold text-twk-green tracking-[0.45em] uppercase pl-1 drop-shadow-[0_0_10px_rgba(0,255,136,0.7)]">
+              LAB
+            </span>
           </div>
           <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-twk-green/10 text-twk-green border border-twk-green/30 tracking-wider font-semibold">
             Beta
