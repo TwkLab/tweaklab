@@ -536,7 +536,7 @@
                                                             Style="{StaticResource TwkCompactButton}" Content="Copiar Modelo da RAM" />
                                                 </Grid>
 
-                                                <TextBlock Text="{Binding Inventory.Ram.CommercialSummary, TargetNullValue={Binding Inventory.Ram.TotalFormatted}}"
+                                                <TextBlock Text="{Binding Inventory.Ram.CommercialSummary, TargetNullValue='Memória RAM'}"
                                                            FontWeight="Bold" FontSize="14.5" Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,6" />
 
                                                 <ItemsControl ItemsSource="{Binding Inventory.Ram.Modules}">
