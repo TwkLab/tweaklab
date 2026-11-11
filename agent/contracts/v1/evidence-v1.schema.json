@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TwkEvidencePayloadV1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "clientEvidenceId",
+    "agentVersion",
+    "capturedAtUtc",
+    "kind",
+    "consent",
+    "payload"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "enum": [1] },
+    "clientEvidenceId": { "type": "string", "format": "uuid" },
+    "agentVersion": { "type": "string" },
+    "linkId": { "type": ["string", "null"] },
+    "capturedAtUtc": { "type": "string", "format": "date-time" },
+    "kind": {
+      "type": "string",
+      "enum": ["inventory", "diagnostic", "benchmark", "comparison"]
+    },
+    "consent": {
+      "type": "object",
+      "required": ["noticeVersion", "categories", "confirmedAtUtc", "payloadDigest"],
+      "properties": {
+        "noticeVersion": { "type": "string" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "confirmedAtUtc": { "type": "string", "format": "date-time" },
+        "payloadDigest": { "type": "string" }
+      }
+    },
+    "payload": { "type": "object" }
+  }
+}

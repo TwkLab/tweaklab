@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Twk.Agent.Core\Twk.Agent.Core.csproj" />
+    <ProjectReference Include="..\Twk.Agent.Windows\Twk.Agent.Windows.csproj" />
+    <ProjectReference Include="..\Twk.Agent.Infrastructure\Twk.Agent.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>
