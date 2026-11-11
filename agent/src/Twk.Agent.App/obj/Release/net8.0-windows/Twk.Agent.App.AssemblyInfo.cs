@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Twk.Agent.App")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2695419d9f6b087f188bfc8675cb9985574b3020")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f64151b7c4845b8cd103415d47e5860140cd9b68")]
 [assembly: System.Reflection.AssemblyProductAttribute("Twk.Agent.App")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Twk.Agent.App")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,62 +1,86 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Cores Verificadas da Identidade Visual TweakLab -->
-    <Color x:Key="TwkBgColor">#050605</Color>
-    <Color x:Key="TwkSurfaceColor">#0A0D0A</Color>
-    <Color x:Key="TwkCardColor">#0F140F</Color>
-    <Color x:Key="TwkBorderColor">#1C261C</Color>
-    <Color x:Key="TwkGreenColor">#00FF88</Color>
-    <Color x:Key="TwkGreenHoverColor">#00D976</Color>
-    <Color x:Key="TwkTextColor">#F5F7F5</Color>
-    <Color x:Key="TwkMutedColor">#9CA3AF</Color>
-    <Color x:Key="TwkDimColor">#6B7280</Color>
-    <Color x:Key="TwkInfoColor">#00E5FF</Color>
-    <Color x:Key="TwkAlertColor">#F59E0B</Color>
-    <Color x:Key="TwkErrorColor">#EF4444</Color>
+    <!-- ═══════════════════════════════════════════════════════════════
+         TweakLab Design System — Dark Cyber Theme v2
+         Palette: Deep black + neon green accents + proper hierarchy
+    ═══════════════════════════════════════════════════════════════ -->
 
-    <!-- SolidColorBrushes -->
+    <!-- Core Palette -->
+    <Color x:Key="TwkBgColor">#0A0A0B</Color>
+    <Color x:Key="TwkSidebarColor">#0E0F10</Color>
+    <Color x:Key="TwkSurfaceColor">#121316</Color>
+    <Color x:Key="TwkCardColor">#16181B</Color>
+    <Color x:Key="TwkCardHoverColor">#1C1E22</Color>
+    <Color x:Key="TwkBorderColor">#232529</Color>
+    <Color x:Key="TwkBorderSubtleColor">#1A1C1F</Color>
+
+    <!-- Accent -->
+    <Color x:Key="TwkGreenColor">#00E676</Color>
+    <Color x:Key="TwkGreenDimColor">#00C864</Color>
+    <Color x:Key="TwkGreenGlowColor">#00E67633</Color>
+
+    <!-- Text Hierarchy -->
+    <Color x:Key="TwkTextColor">#EAEDF0</Color>
+    <Color x:Key="TwkTextSecondaryColor">#9DA3AE</Color>
+    <Color x:Key="TwkTextDimColor">#5C6370</Color>
+    <Color x:Key="TwkTextDisabledColor">#3B3F47</Color>
+
+    <!-- Semantic -->
+    <Color x:Key="TwkInfoColor">#42A5F5</Color>
+    <Color x:Key="TwkWarnColor">#FFA726</Color>
+    <Color x:Key="TwkErrorColor">#EF5350</Color>
+    <Color x:Key="TwkSuccessColor">#66BB6A</Color>
+
+    <!-- Brushes -->
     <SolidColorBrush x:Key="TwkBgBrush" Color="{StaticResource TwkBgColor}" />
+    <SolidColorBrush x:Key="TwkSidebarBrush" Color="{StaticResource TwkSidebarColor}" />
     <SolidColorBrush x:Key="TwkSurfaceBrush" Color="{StaticResource TwkSurfaceColor}" />
     <SolidColorBrush x:Key="TwkCardBrush" Color="{StaticResource TwkCardColor}" />
+    <SolidColorBrush x:Key="TwkCardHoverBrush" Color="{StaticResource TwkCardHoverColor}" />
     <SolidColorBrush x:Key="TwkBorderBrush" Color="{StaticResource TwkBorderColor}" />
+    <SolidColorBrush x:Key="TwkBorderSubtleBrush" Color="{StaticResource TwkBorderSubtleColor}" />
     <SolidColorBrush x:Key="TwkGreenBrush" Color="{StaticResource TwkGreenColor}" />
-    <SolidColorBrush x:Key="TwkGreenHoverBrush" Color="{StaticResource TwkGreenHoverColor}" />
+    <SolidColorBrush x:Key="TwkGreenDimBrush" Color="{StaticResource TwkGreenDimColor}" />
+    <SolidColorBrush x:Key="TwkGreenGlowBrush" Color="{StaticResource TwkGreenGlowColor}" />
     <SolidColorBrush x:Key="TwkTextBrush" Color="{StaticResource TwkTextColor}" />
-    <SolidColorBrush x:Key="TwkMutedBrush" Color="{StaticResource TwkMutedColor}" />
-    <SolidColorBrush x:Key="TwkDimBrush" Color="{StaticResource TwkDimColor}" />
+    <SolidColorBrush x:Key="TwkTextSecondaryBrush" Color="{StaticResource TwkTextSecondaryColor}" />
+    <SolidColorBrush x:Key="TwkDimBrush" Color="{StaticResource TwkTextDimColor}" />
+    <SolidColorBrush x:Key="TwkMutedBrush" Color="{StaticResource TwkTextSecondaryColor}" />
     <SolidColorBrush x:Key="TwkInfoBrush" Color="{StaticResource TwkInfoColor}" />
-    <SolidColorBrush x:Key="TwkAlertBrush" Color="{StaticResource TwkAlertColor}" />
+    <SolidColorBrush x:Key="TwkWarnBrush" Color="{StaticResource TwkWarnColor}" />
     <SolidColorBrush x:Key="TwkErrorBrush" Color="{StaticResource TwkErrorColor}" />
+    <SolidColorBrush x:Key="TwkSuccessBrush" Color="{StaticResource TwkSuccessColor}" />
 
     <!-- Converters -->
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
-    <!-- Estilo de Botão Primário Neon -->
+    <!-- ═══ Typography ═══ -->
+    <FontFamily x:Key="UIFont">Segoe UI, Segoe UI Variable, Inter, sans-serif</FontFamily>
+    <FontFamily x:Key="MonoFont">Cascadia Code, Cascadia Mono, Consolas, monospace</FontFamily>
+
+    <!-- ═══ Primary Button — Neon CTA ═══ -->
     <Style x:Key="TwkPrimaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource TwkGreenBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource TwkBgBrush}" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="FontFamily" Value="Consolas, Segoe UI" />
+        <Setter Property="Foreground" Value="#0A0A0B" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontFamily" Value="{StaticResource UIFont}" />
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="Padding" Value="20,10" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{StaticResource TwkGreenHoverBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="{TemplateBinding Padding}">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                            CornerRadius="6" Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{StaticResource TwkGreenHoverBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource TwkGreenDimBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Opacity" Value="0.35" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -64,33 +88,167 @@
         </Setter>
     </Style>
 
-    <!-- Estilo de Botão Secundário / Superfície -->
+    <!-- ═══ Secondary / Ghost Button ═══ -->
     <Style x:Key="TwkSecondaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource TwkSurfaceBrush}" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource TwkTextBrush}" />
-        <Setter Property="FontFamily" Value="Consolas, Segoe UI" />
+        <Setter Property="FontFamily" Value="{StaticResource UIFont}" />
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="Padding" Value="14,9" />
+        <Setter Property="Padding" Value="16,9" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{StaticResource TwkBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="{TemplateBinding Padding}">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1"
+                            CornerRadius="6" Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" Value="{StaticResource TwkGreenBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource TwkCardBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource TwkGreenDimBrush}" />
                             <Setter Property="Foreground" Value="{StaticResource TwkGreenBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.35" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- ═══ Sidebar Nav Button ═══ -->
+    <Style x:Key="NavButton" TargetType="RadioButton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TwkTextSecondaryBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource UIFont}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Padding" Value="14,11" />
+        <Setter Property="Margin" Value="6,1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="Indicator" Grid.Column="0" Width="3" CornerRadius="2"
+                                    Background="Transparent" Margin="0,2,8,2" VerticalAlignment="Stretch" />
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource TwkCardBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource TwkTextBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#1A2E1F" />
+                            <Setter TargetName="Indicator" Property="Background" Value="{StaticResource TwkGreenBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource TwkGreenBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══ Dark TextBox ═══ -->
+    <Style x:Key="TwkTextBox" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource TwkSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TwkTextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource TwkBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontFamily" Value="{StaticResource UIFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="CaretBrush" Value="{StaticResource TwkGreenBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource TwkGreenGlowBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ScrollViewer x:Name="PART_ContentHost" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource TwkGreenDimBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══ Dark CheckBox ═══ -->
+    <Style x:Key="TwkCheckBox" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TwkTextSecondaryBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource UIFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal">
+                        <Border x:Name="Box" Width="18" Height="18" CornerRadius="4"
+                                Background="{StaticResource TwkSurfaceBrush}"
+                                BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1"
+                                Margin="0,0,8,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="Check" Text="✓" FontSize="12" FontWeight="Bold"
+                                       Foreground="{StaticResource TwkBgBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                        </Border>
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Box" Property="Background" Value="{StaticResource TwkGreenBrush}" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource TwkGreenBrush}" />
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource TwkGreenDimBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══ ProgressBar ═══ -->
+    <Style x:Key="TwkProgressBar" TargetType="ProgressBar">
+        <Setter Property="Height" Value="6" />
+        <Setter Property="Background" Value="#1A1C1F" />
+        <Setter Property="Foreground" Value="{StaticResource TwkGreenBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                        <Border x:Name="PART_Track">
+                            <Border x:Name="PART_Indicator" HorizontalAlignment="Left"
+                                    Background="{TemplateBinding Foreground}" CornerRadius="3" />
+                        </Border>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══ ScrollViewer / ScrollBar dark styling ═══ -->
+    <Style TargetType="ScrollViewer">
+        <Setter Property="Background" Value="Transparent" />
     </Style>
 
 </ResourceDictionary>

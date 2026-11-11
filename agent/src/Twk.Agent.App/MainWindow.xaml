@@ -4,418 +4,560 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="TweakLab Agent — Central Técnica &amp; Evidências"
-        Height="780" Width="1160"
-        MinHeight="680" MinWidth="950"
+        Title="TweakLab Agent"
+        Height="780" Width="1200"
+        MinHeight="680" MinWidth="1000"
         Background="{StaticResource TwkBgBrush}"
         Foreground="{StaticResource TwkTextBrush}"
+        FontFamily="{StaticResource UIFont}"
         WindowStartupLocation="CenterScreen">
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <!-- Header Bar -->
-            <RowDefinition Height="Auto" />
-            <!-- Navigation Tabs -->
-            <RowDefinition Height="Auto" />
-            <!-- Main Content Area -->
-            <RowDefinition Height="*" />
-            <!-- Footer Status Bar -->
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- Sidebar -->
+            <ColumnDefinition Width="220" />
+            <!-- Content -->
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0" Margin="0,0,0,16" Padding="0,0,0,14" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="0,0,0,1">
+        <!-- ═══════════════════════════════════════════════
+             SIDEBAR
+        ═══════════════════════════════════════════════ -->
+        <Border Grid.Column="0" Background="{StaticResource TwkSidebarBrush}"
+                BorderBrush="{StaticResource TwkBorderSubtleBrush}" BorderThickness="0,0,1,0">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#101810" BorderBrush="{StaticResource TwkGreenBrush}" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,0,14,0">
-                        <TextBlock Text="TWEAKLAB" FontFamily="Consolas" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TwkGreenBrush}" />
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Central de Atendimento &amp; Evidências de Hardware" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TwkTextBrush}" />
-                        <TextBlock Text="Diagnóstico Transparente • Auditoria Criptográfica SHA-256 • Hub do Especialista" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
+                <!-- Brand -->
+                <StackPanel Grid.Row="0" Margin="18,22,18,6">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <Border Background="#152015" CornerRadius="5" Padding="7,3" Margin="0,0,8,0">
+                            <TextBlock Text="TWK" FontFamily="{StaticResource MonoFont}"
+                                       FontWeight="Bold" FontSize="11"
+                                       Foreground="{StaticResource TwkGreenBrush}" />
+                        </Border>
+                        <TextBlock Text="AGENT" FontFamily="{StaticResource MonoFont}"
+                                   FontWeight="Bold" FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TwkTextBrush}" />
                     </StackPanel>
+                    <TextBlock Text="Central de Atendimento"
+                               FontSize="10.5" Foreground="{StaticResource TwkDimBrush}" Margin="0,4,0,0" />
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="{StaticResource TwkCardBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,8,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Usuário: " FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
-                            <TextBlock Text="{Binding UserEmail, TargetNullValue='Não autenticado'}" FontSize="11" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" />
-                        </StackPanel>
-                    </Border>
+                <!-- Divider -->
+                <Border Grid.Row="1" Height="1" Background="{StaticResource TwkBorderSubtleBrush}" Margin="14,10,14,6" />
+
+                <!-- Navigation -->
+                <StackPanel Grid.Row="2" Margin="0,4,0,0">
+                    <TextBlock Text="DIAGNÓSTICO" FontSize="9.5" FontWeight="SemiBold" FontFamily="{StaticResource MonoFont}"
+                               Foreground="{StaticResource TwkDimBrush}" Margin="22,8,0,6" />
+
+                    <RadioButton x:Name="NavTriagem" GroupName="Nav" IsChecked="True"
+                                 Style="{StaticResource NavButton}" Content="Triagem &amp; Inventário"
+                                 Checked="Nav_Checked" Tag="0" />
+                    <RadioButton x:Name="NavMonitor" GroupName="Nav"
+                                 Style="{StaticResource NavButton}" Content="Monitoramento ao Vivo"
+                                 Checked="Nav_Checked" Tag="1" />
+
+                    <TextBlock Text="FERRAMENTAS" FontSize="9.5" FontWeight="SemiBold" FontFamily="{StaticResource MonoFont}"
+                               Foreground="{StaticResource TwkDimBrush}" Margin="22,18,0,6" />
+
+                    <RadioButton x:Name="NavTools" GroupName="Nav"
+                                 Style="{StaticResource NavButton}" Content="Kit do Técnico"
+                                 Checked="Nav_Checked" Tag="2" />
+
+                    <TextBlock Text="CONTA" FontSize="9.5" FontWeight="SemiBold" FontFamily="{StaticResource MonoFont}"
+                               Foreground="{StaticResource TwkDimBrush}" Margin="22,18,0,6" />
+
+                    <RadioButton x:Name="NavAccount" GroupName="Nav"
+                                 Style="{StaticResource NavButton}" Content="Login &amp; Sincronização"
+                                 Checked="Nav_Checked" Tag="3" />
+                </StackPanel>
+
+                <!-- Sidebar Footer -->
+                <StackPanel Grid.Row="3" Margin="18,0,18,16">
+                    <Border Height="1" Background="{StaticResource TwkBorderSubtleBrush}" Margin="0,0,0,12" />
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="8" Height="8" CornerRadius="4"
+                                Background="{StaticResource TwkGreenBrush}" Margin="0,0,8,0"
+                                VerticalAlignment="Center" />
+                        <TextBlock Text="Modo Local Seguro" FontSize="10"
+                                   Foreground="{StaticResource TwkDimBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="v0.2.0" FontSize="9.5" FontFamily="{StaticResource MonoFont}"
+                               Foreground="{StaticResource TwkDimBrush}" Margin="16,4,0,0" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Navigation Tabs Bar -->
-        <Border Grid.Row="1" Margin="0,0,0,16" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="4">
-            <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderThickness="0">
-                <TabControl.Resources>
-                    <Style TargetType="TabItem">
-                        <Setter Property="Background" Value="Transparent" />
-                        <Setter Property="Foreground" Value="{StaticResource TwkMutedBrush}" />
-                        <Setter Property="FontFamily" Value="Consolas, Segoe UI" />
-                        <Setter Property="FontSize" Value="12" />
-                        <Setter Property="FontWeight" Value="SemiBold" />
-                        <Setter Property="Padding" Value="16,8" />
-                        <Setter Property="Cursor" Value="Hand" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="TabItem">
-                                    <Border Name="Border" Background="{TemplateBinding Background}" CornerRadius="6" Margin="2,0" Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource TwkCardBrush}" />
-                                            <Setter Property="Foreground" Value="{StaticResource TwkGreenBrush}" />
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource TwkTextBrush}" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </TabControl.Resources>
+        <!-- ═══════════════════════════════════════════════
+             MAIN CONTENT AREA
+        ═══════════════════════════════════════════════ -->
+        <Grid Grid.Column="1" Margin="28,22,28,22">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-                <!-- TAB 1: Triagem & Hardware -->
-                <TabItem Header="🔍 1. Triagem &amp; Inventário">
-                    <Grid Margin="0,16,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+            <!-- Pages (shown/hidden by code-behind) -->
 
-                        <!-- Consent Gate Banner -->
-                        <Border Grid.Row="0" Margin="0,0,0,16" Padding="16" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+            <!-- ════ PAGE 0: Triagem & Inventário ════ -->
+            <Grid x:Name="Page0" Grid.Row="0" Visibility="Visible">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Autorização e Princípios de Privacidade (LGPD &amp; Transparência)" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,4" />
-                                    <TextBlock Text="A triagem técnica inspeciona processador, placas de vídeo, memórias e discos via WMI/CIM padrão do Windows em modo somente-leitura. Nenhuma modificação é feita." TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource TwkMutedBrush}" Margin="0,0,0,10" />
-                                    <CheckBox IsChecked="{Binding HasConsent, Mode=TwoWay}" Foreground="{StaticResource TwkGreenBrush}" FontWeight="SemiBold" FontSize="11" FontFamily="Consolas" Content="Autorizo a coleta de evidências técnicas somente-leitura para diagnóstico." />
-                                </StackPanel>
+                <!-- Page Title -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock Text="Triagem &amp; Inventário de Hardware" FontSize="20" FontWeight="SemiBold"
+                               Foreground="{StaticResource TwkTextBrush}" />
+                    <TextBlock Text="Coleta segura e auditável de informações técnicas do computador"
+                               FontSize="12" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,4,0,0" />
+                </StackPanel>
 
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                                    <Button Command="{Binding CollectCommand}" Style="{StaticResource TwkPrimaryButton}" Content="Autorizar e Iniciar Triagem" Margin="0,0,8,0" />
-                                    <Button Command="{Binding CancelCommand}" Style="{StaticResource TwkSecondaryButton}" Content="Cancelar" Visibility="{Binding IsCollecting, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <!-- Hardware & Audit Viewer -->
-                        <Grid Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="3*" />
-                                <ColumnDefinition Width="2*" />
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Left: Hardware Cards -->
-                            <Border Grid.Column="0" Margin="0,0,12,0" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                    <StackPanel>
-                                        <TextBlock Text="Componentes Identificados" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,12" />
-
-                                        <TextBlock Text="Nenhum componente lido ainda. Marque a autorização acima e clique em 'Autorizar e Iniciar Triagem'." Foreground="{StaticResource TwkDimBrush}" FontSize="12" FontFamily="Consolas" TextWrapping="Wrap" Visibility="{Binding HasHardwareData, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" />
-
-                                        <StackPanel Visibility="{Binding HasHardwareData, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <!-- CPU Card -->
-                                            <Border Background="{StaticResource TwkCardBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
-                                                <StackPanel>
-                                                    <TextBlock Text="PROCESSADOR (CPU)" FontSize="10" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,4" />
-                                                    <TextBlock Text="{Binding Inventory.Cpu.Model, TargetNullValue='AMD Ryzen 7 5700X'}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TwkTextBrush}" />
-                                                    <TextBlock FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" Margin="0,2,0,0">
-                                                        <Run Text="Núcleos Físicos: " /><Run Text="{Binding Inventory.Cpu.PhysicalCores}" /><Run Text=" • Threads: " /><Run Text="{Binding Inventory.Cpu.LogicalProcessors}" /><Run Text=" • Arq: " /><Run Text="{Binding Inventory.Cpu.Architecture}" />
-                                                    </TextBlock>
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- GPU Card -->
-                                            <Border Background="{StaticResource TwkCardBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
-                                                <StackPanel>
-                                                    <TextBlock Text="PLACA DE VÍDEO (GPU)" FontSize="10" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,4" />
-                                                    <ItemsControl ItemsSource="{Binding Inventory.Gpus}">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <StackPanel Margin="0,0,0,6">
-                                                                    <TextBlock Text="{Binding Model}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TwkTextBrush}" />
-                                                                    <TextBlock FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" Margin="0,2,0,0">
-                                                                        <Run Text="Driver: " /><Run Text="{Binding DriverVersion}" /><Run Text=" • VRAM: " /><Run Text="{Binding DedicatedVramFormatted}" />
-                                                                    </TextBlock>
-                                                                </StackPanel>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- RAM Card -->
-                                            <Border Background="{StaticResource TwkCardBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
-                                                <StackPanel>
-                                                    <TextBlock Text="MEMÓRIA RAM" FontSize="10" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,4" />
-                                                    <TextBlock Text="{Binding Inventory.Ram.TotalFormatted}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TwkTextBrush}" />
-                                                    <ItemsControl ItemsSource="{Binding Inventory.Ram.Modules}" Margin="0,4,0,0">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}">
-                                                                    <Run Text="Slot: " /><Run Text="{Binding BankLabel}" /><Run Text=" — " /><Run Text="{Binding CapacityFormatted}" /><Run Text=" @ " /><Run Text="{Binding Speed}" /><Run Text=" (" /><Run Text="{Binding PartNumber}" /><Run Text=")" />
-                                                                </TextBlock>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- OS & Motherboard -->
-                                            <Border Background="{StaticResource TwkCardBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
-                                                <StackPanel>
-                                                    <TextBlock Text="SISTEMA &amp; PLACA-MÃE" FontSize="10" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,4" />
-                                                    <TextBlock FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}">
-                                                        <Run Text="SO: " /><Run Text="{Binding Inventory.OperatingSystem.Caption}" /><Run Text=" (" /><Run Text="{Binding Inventory.OperatingSystem.BuildNumber}" /><Run Text=")" />
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" Margin="0,2,0,0">
-                                                        <Run Text="Placa-Mãe: " /><Run Text="{Binding Inventory.Motherboard.Manufacturer}" /><Run Text=" " /><Run Text="{Binding Inventory.Motherboard.Model}" /><Run Text=" • BIOS: " /><Run Text="{Binding Inventory.Motherboard.BiosVersion}" />
-                                                    </TextBlock>
-                                                </StackPanel>
-                                            </Border>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </ScrollViewer>
-                            </Border>
-
-                            <!-- Right: Raw Evidence & Digest -->
-                            <Border Grid.Column="1" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-
-                                    <TextBlock Grid.Row="0" Text="Envelope &amp; Digest Auditável" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,8" />
-
-                                    <!-- Digest Card -->
-                                    <Border Grid.Row="1" Background="{StaticResource TwkCardBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,10">
-                                        <StackPanel>
-                                            <TextBlock Text="SHA-256 PAYLOAD DIGEST" FontSize="9" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" />
-                                            <TextBox Text="{Binding EvidenceDigest, Mode=OneWay, TargetNullValue='sha256:aguardando_coleta...'}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Foreground="{StaticResource TwkTextBrush}" FontFamily="Consolas" FontSize="10" Margin="0,4,0,0" TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <!-- Raw JSON Audit -->
-                                    <Border Grid.Row="2" Background="#040604" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8">
-                                        <TextBox Text="{Binding SerializedEvidence, Mode=OneWay, TargetNullValue='// O JSON auditável aparecerá aqui após a leitura.'}" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="Transparent" Foreground="#A0FFA0" FontFamily="Consolas" FontSize="10" BorderThickness="0" />
-                                    </Border>
-
-                                    <!-- Export Buttons -->
-                                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-                                        <Button Command="{Binding ExportCommand}" Style="{StaticResource TwkPrimaryButton}" Content="💾 Exportar Envelope JSON" Margin="0,0,8,0" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </Grid>
-                </TabItem>
-
-                <!-- TAB 2: Telemetria & Monitoramento em Tempo Real -->
-                <TabItem Header="⚡ 2. Monitoramento em Tempo Real">
-                    <Grid Margin="0,16,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <Border Grid.Row="0" Margin="0,0,0,16" Padding="16" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
-                            <TextBlock Text="Telemetria contínua sem necessidade de driver de kernel. As métricas atualizam a cada 1.5s." FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
-                        </Border>
-
-                        <Grid Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <!-- CPU Gauge -->
-                            <Border Grid.Column="0" Margin="0,0,12,0" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                                <StackPanel>
-                                    <TextBlock Text="PROCESSADOR (CPU)" FontWeight="Bold" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,12" />
-                                    <TextBlock Text="{Binding CpuUsage, Mode=OneWay, StringFormat='{}{0:F0}%'}" FontSize="36" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" />
-                                    <ProgressBar Value="{Binding CpuUsage, Mode=OneWay}" Minimum="0" Maximum="100" Height="8" Margin="0,8,0,16" Foreground="{StaticResource TwkGreenBrush}" Background="#111B11" BorderThickness="0" />
-                                    
-                                    <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="10">
-                                        <StackPanel>
-                                            <TextBlock Text="Temperatura Estimada (ACPI):" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
-                                            <TextBlock Text="{Binding CpuTempFormatted, Mode=OneWay}" FontSize="13" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" Margin="0,4,0,0" />
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- RAM Gauge -->
-                            <Border Grid.Column="1" Margin="0,0,12,0" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                                <StackPanel>
-                                    <TextBlock Text="MEMÓRIA RAM" FontWeight="Bold" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,12" />
-                                    <TextBlock Text="{Binding RamUsage, Mode=OneWay, StringFormat='{}{0:F0}%'}" FontSize="36" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" />
-                                    <ProgressBar Value="{Binding RamUsage, Mode=OneWay}" Minimum="0" Maximum="100" Height="8" Margin="0,8,0,16" Foreground="{StaticResource TwkGreenBrush}" Background="#111B11" BorderThickness="0" />
-
-                                    <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="10">
-                                        <StackPanel>
-                                            <TextBlock Text="Uso Físico Alocado:" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
-                                            <TextBlock Text="{Binding RamUsageFormatted, Mode=OneWay}" FontSize="12" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" Margin="0,4,0,0" />
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- GPU & Ambient Gauge -->
-                            <Border Grid.Column="2" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                                <StackPanel>
-                                    <TextBlock Text="PLACA DE VÍDEO (GPU)" FontWeight="Bold" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,12" />
-                                    <TextBlock Text="{Binding GpuName}" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TwkTextBrush}" TextWrapping="Wrap" />
-                                    <TextBlock Text="Telemetria Avançada &amp; Hotspot" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" Margin="0,4,0,16" />
-
-                                    <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="10">
-                                        <StackPanel>
-                                            <TextBlock Text="Para sensores de GPU mili-grau e VRAM, use o HWiNFO64 disponível na aba Loja de Ferramentas." FontSize="11" Foreground="{StaticResource TwkMutedBrush}" TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-                    </Grid>
-                </TabItem>
-
-                <!-- TAB 3: Loja de Ferramentas do Técnico (App Store) -->
-                <TabItem Header="🛠️ 3. Ferramentas do Técnico">
-                    <Grid Margin="0,16,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <Border Grid.Row="0" Margin="0,0,0,14" Padding="14" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
-                            <TextBlock Text="Catálogo oficial das ferramentas homologadas pela TweakLab. A instalação é manual e sob controle total do usuário." FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
-                        </Border>
-
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding Tools}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Width="340" Margin="0,0,14,14" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="*" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-
-                                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TwkTextBrush}" />
-                                                    <Border Background="#152615" CornerRadius="4" Padding="6,2" Margin="8,0,0,0">
-                                                        <TextBlock Text="{Binding Category}" FontSize="9" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" />
-                                                    </Border>
-                                                </StackPanel>
-
-                                                <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="11" Foreground="{StaticResource TwkMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
-
-                                                <Border Grid.Row="2" Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="8" Margin="0,0,0,10">
-                                                    <TextBlock Text="{Binding RecommendedUse}" FontSize="10" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" TextWrapping="Wrap" />
-                                                </Border>
-
-                                                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
-                                                    <Button Command="{Binding DataContext.OpenToolUrlCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding OfficialSiteUrl}" Style="{StaticResource TwkSecondaryButton}" Content="Site Oficial" Margin="0,0,6,0" Padding="10,6" FontSize="11" />
-                                                    <Button Command="{Binding DataContext.OpenToolUrlCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding DownloadUrl}" Style="{StaticResource TwkPrimaryButton}" Content="Download" Padding="12,6" FontSize="11" />
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-                </TabItem>
-
-                <!-- TAB 4: Minha Conta & Sincronização Automática -->
-                <TabItem Header="☁️ 4. Conta &amp; Sincronização">
-                    <Grid Margin="0,16,0,0">
+                <!-- Consent Card -->
+                <Border Grid.Row="1" Margin="0,0,0,18" Padding="18"
+                        Background="{StaticResource TwkSurfaceBrush}"
+                        BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                    <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="400" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Login Card -->
-                        <Border Grid.Column="0" Margin="0,0,16,0" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Autorização de Privacidade" FontWeight="SemiBold" FontSize="13"
+                                       Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,6" />
+                            <TextBlock Text="A triagem lê processador, memória, GPU, discos e sistema operacional via WMI (somente leitura). Nenhum dado é transmitido sem seu consentimento explícito."
+                                       TextWrapping="Wrap" FontSize="11.5" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,0,0,12" />
+                            <CheckBox IsChecked="{Binding HasConsent, Mode=TwoWay}" Style="{StaticResource TwkCheckBox}"
+                                      Content="Autorizo a coleta de evidências técnicas somente-leitura" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                            <Button Command="{Binding CollectCommand}" Style="{StaticResource TwkPrimaryButton}"
+                                    Content="Iniciar Triagem" Margin="0,0,8,0" />
+                            <Button Command="{Binding CancelCommand}" Style="{StaticResource TwkSecondaryButton}"
+                                    Content="Cancelar"
+                                    Visibility="{Binding IsCollecting, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Two Column Layout: Hardware / Audit -->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Hardware Cards -->
+                    <Border Grid.Column="0" Margin="0,0,14,0" Padding="18"
+                            Background="{StaticResource TwkSurfaceBrush}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel>
-                                <TextBlock Text="Login da Conta TweakLab" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,6" />
-                                <TextBlock Text="Conecte seu nome e e-mail para que as evidências geradas pelo TWK Agent sejam sincronizadas automaticamente com o portal de chamados." FontSize="11" Foreground="{StaticResource TwkMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,16" />
+                                <TextBlock Text="COMPONENTES IDENTIFICADOS" FontSize="10"
+                                           FontFamily="{StaticResource MonoFont}" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,14" />
 
-                                <TextBlock Text="Seu Nome / Apelido:" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" Margin="0,0,0,4" />
-                                <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" Background="{StaticResource TwkCardBrush}" Foreground="{StaticResource TwkTextBrush}" BorderBrush="{StaticResource TwkBorderBrush}" Padding="8" Margin="0,0,0,12" />
+                                <TextBlock Text="Nenhuma leitura realizada. Marque a autorização acima e clique em Iniciar Triagem."
+                                           FontSize="12" Foreground="{StaticResource TwkDimBrush}" TextWrapping="Wrap"
+                                           Visibility="{Binding HasHardwareData, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" />
 
-                                <TextBlock Text="Seu E-mail:" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" Margin="0,0,0,4" />
-                                <TextBox Text="{Binding UserEmail, UpdateSourceTrigger=PropertyChanged}" Background="{StaticResource TwkCardBrush}" Foreground="{StaticResource TwkTextBrush}" BorderBrush="{StaticResource TwkBorderBrush}" Padding="8" Margin="0,0,0,16" />
+                                <StackPanel Visibility="{Binding HasHardwareData, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <!-- CPU -->
+                                    <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="14" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="PROCESSADOR" FontSize="9.5" FontFamily="{StaticResource MonoFont}"
+                                                       FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,6" />
+                                            <TextBlock Text="{Binding Inventory.Cpu.Model}" FontWeight="SemiBold" FontSize="14"
+                                                       Foreground="{StaticResource TwkTextBrush}" />
+                                            <TextBlock FontSize="11.5" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,4,0,0">
+                                                <Run Text="{Binding Inventory.Cpu.PhysicalCores, Mode=OneWay}" /><Run Text=" núcleos • " />
+                                                <Run Text="{Binding Inventory.Cpu.LogicalProcessors, Mode=OneWay}" /><Run Text=" threads • " />
+                                                <Run Text="{Binding Inventory.Cpu.Architecture, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
 
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Command="{Binding LoginCommand}" Style="{StaticResource TwkPrimaryButton}" Content="Entrar / Salvar" Margin="0,0,8,0" />
-                                    <Button Command="{Binding LogoutCommand}" Style="{StaticResource TwkSecondaryButton}" Content="Sair" />
+                                    <!-- GPU -->
+                                    <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="14" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="PLACA DE VÍDEO" FontSize="9.5" FontFamily="{StaticResource MonoFont}"
+                                                       FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,6" />
+                                            <ItemsControl ItemsSource="{Binding Inventory.Gpus}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Margin="0,0,0,6">
+                                                            <TextBlock Text="{Binding Model}" FontWeight="SemiBold" FontSize="14" Foreground="{StaticResource TwkTextBrush}" />
+                                                            <TextBlock FontSize="11.5" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,3,0,0">
+                                                                <Run Text="Driver " /><Run Text="{Binding DriverVersion, Mode=OneWay}" />
+                                                                <Run Text=" • VRAM " /><Run Text="{Binding DedicatedVramFormatted, Mode=OneWay}" />
+                                                            </TextBlock>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- RAM -->
+                                    <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="14" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="MEMÓRIA RAM" FontSize="9.5" FontFamily="{StaticResource MonoFont}"
+                                                       FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,6" />
+                                            <TextBlock Text="{Binding Inventory.Ram.TotalFormatted}" FontWeight="SemiBold" FontSize="14" Foreground="{StaticResource TwkTextBrush}" />
+                                            <ItemsControl ItemsSource="{Binding Inventory.Ram.Modules}" Margin="0,6,0,0">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock FontSize="11" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,1,0,0">
+                                                            <Run Text="{Binding BankLabel, Mode=OneWay}" /><Run Text=" — " />
+                                                            <Run Text="{Binding CapacityFormatted, Mode=OneWay}" /><Run Text=" @ " />
+                                                            <Run Text="{Binding Speed, Mode=OneWay}" />
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- OS & Motherboard -->
+                                    <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="14">
+                                        <StackPanel>
+                                            <TextBlock Text="SISTEMA &amp; PLACA-MÃE" FontSize="9.5" FontFamily="{StaticResource MonoFont}"
+                                                       FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,6" />
+                                            <TextBlock FontSize="12" Foreground="{StaticResource TwkTextBrush}">
+                                                <Run Text="{Binding Inventory.OperatingSystem.Caption, Mode=OneWay}" />
+                                                <Run Text=" (" /><Run Text="{Binding Inventory.OperatingSystem.BuildNumber, Mode=OneWay}" /><Run Text=")" />
+                                            </TextBlock>
+                                            <TextBlock FontSize="11" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,4,0,0">
+                                                <Run Text="{Binding Inventory.Motherboard.Manufacturer, Mode=OneWay}" />
+                                                <Run Text=" " /><Run Text="{Binding Inventory.Motherboard.Model, Mode=OneWay}" />
+                                                <Run Text=" • BIOS " /><Run Text="{Binding Inventory.Motherboard.BiosVersion, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
                             </StackPanel>
-                        </Border>
+                        </ScrollViewer>
+                    </Border>
 
-                        <!-- Sync Status Card -->
-                        <Border Grid.Column="1" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
-                            <StackPanel>
-                                <TextBlock Text="Status da Sincronização em Nuvem" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,8" />
-                                
-                                <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,16">
-                                    <TextBlock Text="{Binding SyncStatusMessage}" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" TextWrapping="Wrap" />
-                                </Border>
+                    <!-- Right: Audit Envelope -->
+                    <Border Grid.Column="1" Padding="18"
+                            Background="{StaticResource TwkSurfaceBrush}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                                <TextBlock Text="Como funciona a sincronização automática:" FontWeight="Bold" FontSize="12" Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,6" />
-                                <TextBlock Text="1. Faça login com o mesmo e-mail usado no site tweaklab-lac.vercel.app&#x0a;2. Ao concluir uma triagem nesta ferramenta, o TWK Agent envia o envelope assinado para a API da TweakLab&#x0a;3. Na tela de abertura de chamado, basta digitar o mesmo e-mail que o site puxará a evidência automaticamente!" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,16" />
+                            <TextBlock Grid.Row="0" Text="ENVELOPE DE EVIDÊNCIA" FontSize="10"
+                                       FontFamily="{StaticResource MonoFont}" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,12" />
 
-                                <Button Command="{Binding SyncCloudCommand}" Style="{StaticResource TwkPrimaryButton}" Content="☁️ Sincronizar Agora com a Nuvem" HorizontalAlignment="Left" />
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </TabItem>
-            </TabControl>
-        </Border>
+                            <!-- Digest -->
+                            <Border Grid.Row="1" Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="SHA-256 DIGEST" FontSize="9" FontFamily="{StaticResource MonoFont}"
+                                               FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,4" />
+                                    <TextBox Text="{Binding EvidenceDigest, Mode=OneWay, TargetNullValue='Aguardando triagem...'}"
+                                             IsReadOnly="True" BorderThickness="0" Background="Transparent"
+                                             Foreground="{StaticResource TwkTextSecondaryBrush}"
+                                             FontFamily="{StaticResource MonoFont}" FontSize="10" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
 
-        <!-- Footer Status Bar -->
-        <Border Grid.Row="3" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                            <!-- Raw JSON -->
+                            <Border Grid.Row="2" Background="#08090A" CornerRadius="6" Padding="10"
+                                    BorderBrush="{StaticResource TwkBorderSubtleBrush}" BorderThickness="1">
+                                <TextBox Text="{Binding SerializedEvidence, Mode=OneWay, TargetNullValue='// JSON da evidência aparecerá aqui após a triagem'}"
+                                         IsReadOnly="True" AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                         Background="Transparent" Foreground="#7EC87E"
+                                         FontFamily="{StaticResource MonoFont}" FontSize="10.5"
+                                         BorderThickness="0" />
+                            </Border>
 
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Status: " FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
-                    <TextBlock Text="{Binding StatusMessage}" FontSize="11" FontFamily="Consolas" FontWeight="SemiBold" Foreground="{StaticResource TwkGreenBrush}" />
+                            <!-- Export -->
+                            <Button Grid.Row="3" Command="{Binding ExportCommand}" Style="{StaticResource TwkPrimaryButton}"
+                                    Content="Exportar Envelope JSON" HorizontalAlignment="Right" Margin="0,14,0,0" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- ════ PAGE 1: Monitoramento ao Vivo ════ -->
+            <Grid x:Name="Page1" Grid.Row="0" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock Text="Monitoramento em Tempo Real" FontSize="20" FontWeight="SemiBold"
+                               Foreground="{StaticResource TwkTextBrush}" />
+                    <TextBlock Text="Telemetria contínua sem drivers de kernel — atualização a cada 1.5s"
+                               FontSize="12" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,4,0,0" />
                 </StackPanel>
 
-                <TextBlock Grid.Column="1" Text="TweakLab Agent v0.2.0 • Build Local 2026" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkDimBrush}" VerticalAlignment="Center" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- CPU -->
+                    <Border Grid.Column="0" Margin="0,0,14,0" Padding="20"
+                            Background="{StaticResource TwkSurfaceBrush}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock Text="CPU" FontSize="10" FontFamily="{StaticResource MonoFont}"
+                                       FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,16" />
+                            <TextBlock Text="{Binding CpuUsage, Mode=OneWay, StringFormat='{}{0:F0}%'}"
+                                       FontSize="42" FontWeight="Light" FontFamily="{StaticResource UIFont}"
+                                       Foreground="{StaticResource TwkTextBrush}" />
+                            <ProgressBar Value="{Binding CpuUsage, Mode=OneWay}" Minimum="0" Maximum="100"
+                                         Style="{StaticResource TwkProgressBar}" Margin="0,12,0,20" />
+
+                            <TextBlock Text="Temperatura" FontSize="10" Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding CpuTempFormatted, Mode=OneWay}" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TwkTextBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- RAM -->
+                    <Border Grid.Column="1" Margin="0,0,14,0" Padding="20"
+                            Background="{StaticResource TwkSurfaceBrush}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock Text="MEMÓRIA" FontSize="10" FontFamily="{StaticResource MonoFont}"
+                                       FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,16" />
+                            <TextBlock Text="{Binding RamUsage, Mode=OneWay, StringFormat='{}{0:F0}%'}"
+                                       FontSize="42" FontWeight="Light" FontFamily="{StaticResource UIFont}"
+                                       Foreground="{StaticResource TwkTextBrush}" />
+                            <ProgressBar Value="{Binding RamUsage, Mode=OneWay}" Minimum="0" Maximum="100"
+                                         Style="{StaticResource TwkProgressBar}" Margin="0,12,0,20" />
+
+                            <TextBlock Text="Uso Físico" FontSize="10" Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding RamUsageFormatted, Mode=OneWay}" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TwkTextBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- GPU -->
+                    <Border Grid.Column="2" Padding="20"
+                            Background="{StaticResource TwkSurfaceBrush}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock Text="GPU" FontSize="10" FontFamily="{StaticResource MonoFont}"
+                                       FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,16" />
+                            <TextBlock Text="{Binding GpuName, Mode=OneWay}" FontSize="16" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TwkTextBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="Sensores detalhados via HWiNFO64"
+                                       FontSize="11" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,8,0,16" />
+                            <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="12">
+                                <TextBlock Text="Para métricas de GPU Hotspot, VRAM e Power Draw, utilize o HWiNFO64 disponível no Kit do Técnico."
+                                           FontSize="11" Foreground="{StaticResource TwkDimBrush}" TextWrapping="Wrap" />
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Grid>
-        </Border>
+
+            <!-- ════ PAGE 2: Kit do Técnico ════ -->
+            <Grid x:Name="Page2" Grid.Row="0" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock Text="Kit do Técnico" FontSize="20" FontWeight="SemiBold"
+                               Foreground="{StaticResource TwkTextBrush}" />
+                    <TextBlock Text="Ferramentas homologadas para diagnóstico e performance — instalação manual pelo cliente"
+                               FontSize="12" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,4,0,0" />
+                </StackPanel>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Tools}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="290" Margin="0,0,14,14" Padding="16"
+                                        Background="{StaticResource TwkSurfaceBrush}"
+                                        BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Title + Category Badge -->
+                                        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"
+                                                       Foreground="{StaticResource TwkTextBrush}" />
+                                            <Border Background="#151D18" CornerRadius="4" Padding="6,2" Margin="0,5,0,0"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Category}" FontSize="9"
+                                                           FontFamily="{StaticResource MonoFont}"
+                                                           Foreground="{StaticResource TwkGreenBrush}" />
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Description -->
+                                        <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="11.5"
+                                                   Foreground="{StaticResource TwkTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                                        <!-- Recommended Use -->
+                                        <Border Grid.Row="2" Background="{StaticResource TwkCardBrush}"
+                                                CornerRadius="5" Padding="10" Margin="0,0,0,12">
+                                            <TextBlock Text="{Binding RecommendedUse}" FontSize="10.5"
+                                                       Foreground="{StaticResource TwkGreenBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+
+                                        <!-- Buttons -->
+                                        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button Command="{Binding DataContext.OpenToolUrlCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding OfficialSiteUrl}"
+                                                    Style="{StaticResource TwkSecondaryButton}"
+                                                    Content="Site" Padding="12,7" FontSize="11" Margin="0,0,6,0" />
+                                            <Button Command="{Binding DataContext.OpenToolUrlCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding DownloadUrl}"
+                                                    Style="{StaticResource TwkPrimaryButton}"
+                                                    Content="Download" Padding="14,7" FontSize="11" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ════ PAGE 3: Conta & Sincronização ════ -->
+            <Grid x:Name="Page3" Grid.Row="0" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock Text="Conta &amp; Sincronização" FontSize="20" FontWeight="SemiBold"
+                               Foreground="{StaticResource TwkTextBrush}" />
+                    <TextBlock Text="Conecte-se para que suas evidências sincronizem automaticamente com o portal TweakLab"
+                               FontSize="12" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,4,0,0" />
+                </StackPanel>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="380" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Login -->
+                    <Border Grid.Column="0" Margin="0,0,14,0" Padding="22"
+                            Background="{StaticResource TwkSurfaceBrush}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock Text="Identificação" FontWeight="SemiBold" FontSize="14"
+                                       Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,4" />
+                            <TextBlock Text="Use o mesmo e-mail que você usa no portal do site."
+                                       FontSize="11.5" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,0,0,20" />
+
+                            <TextBlock Text="Nome" FontSize="11" Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,5" />
+                            <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TwkTextBox}" Margin="0,0,0,14" />
+
+                            <TextBlock Text="E-mail" FontSize="11" Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,5" />
+                            <TextBox Text="{Binding UserEmail, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TwkTextBox}" Margin="0,0,0,20" />
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button Command="{Binding LoginCommand}" Style="{StaticResource TwkPrimaryButton}"
+                                        Content="Entrar" Margin="0,0,8,0" />
+                                <Button Command="{Binding LogoutCommand}" Style="{StaticResource TwkSecondaryButton}"
+                                        Content="Sair" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Sync Status -->
+                    <Border Grid.Column="1" Padding="22"
+                            Background="{StaticResource TwkSurfaceBrush}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock Text="Status da Sincronização" FontWeight="SemiBold" FontSize="14"
+                                       Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,14" />
+
+                            <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="14" Margin="0,0,0,20">
+                                <TextBlock Text="{Binding SyncStatusMessage, Mode=OneWay}" FontSize="12"
+                                           FontFamily="{StaticResource MonoFont}"
+                                           Foreground="{StaticResource TwkGreenBrush}" TextWrapping="Wrap" />
+                            </Border>
+
+                            <TextBlock Text="COMO FUNCIONA" FontSize="10" FontFamily="{StaticResource MonoFont}"
+                                       FontWeight="Bold" Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,10" />
+
+                            <StackPanel Margin="0,0,0,6">
+                                <TextBlock FontSize="12" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,0,0,6" TextWrapping="Wrap">
+                                    <Run FontWeight="SemiBold" Foreground="{StaticResource TwkTextBrush}">1.</Run>
+                                    <Run> Faça login com o mesmo e-mail usado no site tweaklab-lac.vercel.app</Run>
+                                </TextBlock>
+                                <TextBlock FontSize="12" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,0,0,6" TextWrapping="Wrap">
+                                    <Run FontWeight="SemiBold" Foreground="{StaticResource TwkTextBrush}">2.</Run>
+                                    <Run> Ao concluir a triagem, o envelope é enviado automaticamente para o portal</Run>
+                                </TextBlock>
+                                <TextBlock FontSize="12" Foreground="{StaticResource TwkTextSecondaryBrush}" TextWrapping="Wrap">
+                                    <Run FontWeight="SemiBold" Foreground="{StaticResource TwkTextBrush}">3.</Run>
+                                    <Run> No chamado, basta informar o mesmo e-mail — as peças aparecem automaticamente</Run>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <Button Command="{Binding SyncCloudCommand}" Style="{StaticResource TwkPrimaryButton}"
+                                    Content="Sincronizar Agora" HorizontalAlignment="Left" Margin="0,18,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- Status Bar -->
+            <Border Grid.Row="1" Margin="0,16,0,0" Padding="14,8"
+                    Background="{StaticResource TwkSurfaceBrush}"
+                    BorderBrush="{StaticResource TwkBorderSubtleBrush}" BorderThickness="1" CornerRadius="6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock FontSize="11" Foreground="{StaticResource TwkTextSecondaryBrush}" VerticalAlignment="Center">
+                        <Run Text="{Binding StatusMessage, Mode=OneWay}" />
+                    </TextBlock>
+
+                    <TextBlock Grid.Column="1" FontSize="10" FontFamily="{StaticResource MonoFont}"
+                               Foreground="{StaticResource TwkDimBrush}" VerticalAlignment="Center">
+                        <Run Text="sha256 • audit • offline" />
+                    </TextBlock>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
