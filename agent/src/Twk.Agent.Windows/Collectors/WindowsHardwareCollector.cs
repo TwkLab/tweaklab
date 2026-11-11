@@ -86,18 +86,42 @@ public class WindowsHardwareCollector : IHardwareCollector
                 var bank = obj["BankLabel"]?.ToString()?.Trim() ?? "Slot";
                 var formatted = $"{cap / (1024.0 * 1024.0 * 1024.0):F1} GiB";
 
-                modules.Add(new RamModule(formatted, cap, speed, mfr, part, bank));
+                var commercial = Twk.Agent.Core.Services.RamModelDecoder.DecodeCommercialModel(mfr, part);
+                modules.Add(new RamModule(formatted, cap, speed, mfr, part, bank, commercial));
             }
         }
         catch
         {
         }
 
+        // Propagate known kit model if sibling module in dual channel has generic part number
+        var knownModel = modules.Find(m => !string.IsNullOrEmpty(m.CommercialModel) && (
+            m.CommercialModel.Contains("Spectrix") || 
+            m.CommercialModel.Contains("Vengeance") || 
+            m.CommercialModel.Contains("Beast") || 
+            m.CommercialModel.Contains("Trident") ||
+            m.CommercialModel.Contains("Ballistix") ||
+            m.CommercialModel.Contains("Delta")
+        ))?.CommercialModel;
+
+        if (!string.IsNullOrEmpty(knownModel))
+        {
+            for (int i = 0; i < modules.Count; i++)
+            {
+                if (string.IsNullOrEmpty(modules[i].CommercialModel) || modules[i].PartNumber.StartsWith("DDR") || modules[i].CommercialModel == "Memória RAM")
+                {
+                    modules[i] = modules[i] with { CommercialModel = knownModel };
+                }
+            }
+        }
+
         var totalFormatted = totalBytes > 0 
             ? $"{totalBytes / (1024.0 * 1024.0 * 1024.0):F1} GiB" 
             : "Indisponível";
 
-        return new RamInfo(totalFormatted, totalBytes, modules);
+        var kitSummary = Twk.Agent.Core.Services.RamModelDecoder.ResolveKitSummary(modules, totalFormatted);
+
+        return new RamInfo(totalFormatted, totalBytes, modules, kitSummary);
     }
 
     private IReadOnlyList<GpuInfo> CollectGpus()

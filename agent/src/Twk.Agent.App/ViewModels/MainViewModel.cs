@@ -96,6 +96,8 @@ public class MainViewModel : INotifyPropertyChanged
         CancelCommand = new RelayCommand(_ => CancelCollection(), _ => IsCollecting);
         ExportCommand = new RelayCommand(_ => ExportEvidence(), _ => Inventory != null);
         CopyDigestCommand = new RelayCommand(_ => CopyDigestToClipboard(), _ => !string.IsNullOrEmpty(EvidenceDigest));
+        CopySpecsCommand = new RelayCommand(_ => CopySpecsToClipboard(), _ => Inventory != null);
+        CopyRamCommand = new RelayCommand(_ => CopyRamToClipboard(), _ => Inventory != null);
         LoginCommand = new RelayCommand(_ => PerformLogin(), _ => !string.IsNullOrWhiteSpace(UserEmail));
         LogoutCommand = new RelayCommand(_ => PerformLogout());
         SyncCloudCommand = new RelayCommand(async _ => await SyncWithCloudAsync(), _ => IsLoggedIn && Inventory != null && !IsSyncing);
@@ -328,6 +330,8 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand CancelCommand { get; }
     public ICommand ExportCommand { get; }
     public ICommand CopyDigestCommand { get; }
+    public ICommand CopySpecsCommand { get; }
+    public ICommand CopyRamCommand { get; }
     public ICommand LoginCommand { get; }
     public ICommand LogoutCommand { get; }
     public ICommand SyncCloudCommand { get; }
@@ -514,7 +518,72 @@ public class MainViewModel : INotifyPropertyChanged
         try
         {
             Clipboard.SetText(EvidenceDigest);
-            StatusMessage = "✓ Hash SHA-256 copiado para a Área de Transferência!";
+            StatusMessage = "✓ Selo SHA-256 copiado para a Área de Transferência!";
+        }
+        catch {}
+    }
+
+    private void CopyRamToClipboard()
+    {
+        if (Inventory?.Ram == null) return;
+        try
+        {
+            var model = !string.IsNullOrEmpty(Inventory.Ram.CommercialSummary)
+                ? Inventory.Ram.CommercialSummary
+                : Inventory.Ram.TotalFormatted;
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"Modelo da Memória RAM: {model}");
+            foreach (var m in Inventory.Ram.Modules)
+            {
+                var mModel = !string.IsNullOrEmpty(m.CommercialModel) ? m.CommercialModel : m.Manufacturer;
+                sb.AppendLine($"• {m.BankLabel}: {mModel} — {m.CapacityFormatted} @ {m.Speed} (Part Number: {m.PartNumber})");
+            }
+
+            Clipboard.SetText(sb.ToString().TrimEnd());
+            StatusMessage = "✓ Modelo exato da memória RAM copiado!";
+        }
+        catch {}
+    }
+
+    private void CopySpecsToClipboard()
+    {
+        if (Inventory == null) return;
+        try
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("=== TWEAKLAB — LAUDO TÉCNICO & ESPECIFICAÇÕES DO COMPUTADOR ===");
+            sb.AppendLine($"Data da Auditoria: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+            if (!string.IsNullOrEmpty(EvidenceDigest))
+            {
+                sb.AppendLine($"Selo de Integridade (SHA-256): {EvidenceDigest}");
+            }
+            sb.AppendLine();
+            sb.AppendLine($"• Processador (CPU): {Inventory.Cpu.Model} ({Inventory.Cpu.PhysicalCores} Cores / {Inventory.Cpu.LogicalProcessors} Threads • {Inventory.Cpu.Architecture})");
+
+            var ramTitle = !string.IsNullOrEmpty(Inventory.Ram.CommercialSummary)
+                ? Inventory.Ram.CommercialSummary
+                : Inventory.Ram.TotalFormatted;
+            sb.AppendLine($"• Memória RAM: {ramTitle}");
+            foreach (var m in Inventory.Ram.Modules)
+            {
+                var mModel = !string.IsNullOrEmpty(m.CommercialModel) ? m.CommercialModel : m.Manufacturer;
+                sb.AppendLine($"    - {m.BankLabel}: {mModel} — {m.CapacityFormatted} @ {m.Speed} (Part: {m.PartNumber})");
+            }
+
+            sb.AppendLine("• Placa de Vídeo (GPU):");
+            foreach (var g in Inventory.Gpus)
+            {
+                sb.AppendLine($"    - {g.Model} (VRAM: {g.DedicatedVramFormatted}, Driver: {g.DriverVersion})");
+            }
+
+            sb.AppendLine($"• Placa-Mãe: {Inventory.Motherboard.Manufacturer} {Inventory.Motherboard.Model} (BIOS: {Inventory.Motherboard.BiosVersion})");
+            sb.AppendLine($"• Sistema Operacional: {Inventory.OperatingSystem.Caption} (Build {Inventory.OperatingSystem.BuildNumber} • {Inventory.OperatingSystem.Architecture})");
+            sb.AppendLine();
+            sb.AppendLine("Laudo auditado pelo TweakLab Agent (https://tweaklab.com)");
+
+            Clipboard.SetText(sb.ToString());
+            StatusMessage = "✓ Especificações completas copiadas (com modelo exato da RAM)!";
         }
         catch {}
     }

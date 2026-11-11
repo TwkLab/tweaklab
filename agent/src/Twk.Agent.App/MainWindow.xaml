@@ -41,11 +41,9 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Left: TweakLab Icon & Title -->
+                <!-- Left: TweakLab Icon & Title (Clean Frameless Logo) -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                    <Border Width="28" Height="28" CornerRadius="6" Background="#112419" BorderBrush="{StaticResource TwkGreenBrush}" BorderThickness="1" Margin="0,0,10,0">
-                        <Image Source="Assets/logo.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
-                    </Border>
+                    <Image Source="Assets/logo.png" Width="26" Height="26" Margin="0,0,10,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
                     <TextBlock Text="TWEAKLAB" FontFamily="{StaticResource MonoFont}"
                                FontWeight="Bold" FontSize="12.5" VerticalAlignment="Center"
                                Foreground="{StaticResource TwkTextBrush}" />
@@ -118,15 +116,13 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!-- Branding Banner -->
+                    <!-- Branding Banner (Frameless Logo) -->
                     <Border Grid.Row="0" Margin="14,16,14,12" Padding="14"
                             Background="{StaticResource TwkSurfaceBrush}"
                             BorderBrush="{StaticResource TwkBorderSubtleBrush}" BorderThickness="1" CornerRadius="10">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <Border Width="34" Height="34" CornerRadius="8" Background="#07130B" BorderBrush="{StaticResource TwkGreenBrush}" BorderThickness="1" Margin="0,0,10,0">
-                                    <Image Source="Assets/logo.png" Width="26" Height="26" RenderOptions.BitmapScalingMode="HighQuality" />
-                                </Border>
+                                <Image Source="Assets/logo.png" Width="30" Height="30" Margin="0,0,10,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="TWEAKLAB" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TwkTextBrush}" />
                                     <TextBlock Text="Central do Técnico" FontSize="10" Foreground="{StaticResource TwkGreenBrush}" />
@@ -157,7 +153,7 @@
                                    Foreground="{StaticResource TwkDimBrush}" Margin="16,16,0,6" />
 
                         <RadioButton x:Name="NavTriagem" GroupName="Nav"
-                                     Style="{StaticResource NavButton}" Content="Triagem &amp; SHA-256"
+                                     Style="{StaticResource NavButton}" Content="Diagnóstico do PC"
                                      Checked="Nav_Checked" Tag="1" />
 
                         <TextBlock Text="REPOSITÓRIO" FontSize="9" FontWeight="Bold" FontFamily="{StaticResource MonoFont}"
@@ -420,7 +416,7 @@
                 </Grid>
 
                 <!-- ═══════════════════════════════════════════════
-                     PAGE 1: TRIAGEM & SHA-256
+                     PAGE 1: DIAGNÓSTICO DO PC
                 ═══════════════════════════════════════════════ -->
                 <Grid x:Name="Page1" Grid.Row="0" Visibility="Collapsed">
                     <Grid.RowDefinitions>
@@ -430,9 +426,9 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                        <TextBlock Text="Triagem &amp; Envelope de Evidência" FontSize="22" FontWeight="SemiBold"
+                        <TextBlock Text="Diagnóstico do PC" FontSize="22" FontWeight="SemiBold"
                                    Foreground="{StaticResource TwkTextBrush}" />
-                        <TextBlock Text="Auditoria segura de hardware via WMI com assinatura criptográfica SHA-256 e sincronização em nuvem"
+                        <TextBlock Text="Auditoria técnica do computador com laudo certificado e selo de integridade"
                                    FontSize="12" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,4,0,0" />
                     </StackPanel>
 
@@ -447,17 +443,17 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Termo de Consentimento &amp; Privacidade LGPD" FontWeight="SemiBold" FontSize="13"
+                                <TextBlock Text="Autorização de Auditoria de Hardware" FontWeight="SemiBold" FontSize="13"
                                            Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,4" />
-                                <TextBlock Text="A triagem realiza leitura local de CPU, placa-mãe, RAM, GPU e SO sem alterar nenhuma configuração do seu Windows."
+                                <TextBlock Text="A leitura técnica analisa processador, memória, GPU, discos e placa-mãe (somente-leitura), gerando o laudo oficial do chamado."
                                            FontSize="11.5" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,0,0,8" />
                                 <CheckBox IsChecked="{Binding HasConsent, Mode=TwoWay}" Style="{StaticResource TwkCheckBox}"
-                                          Content="Autorizo a coleta de evidências técnicas somente-leitura" />
+                                          Content="Autorizo a realização do diagnóstico técnico do computador" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
                                 <Button Command="{Binding CollectCommand}" Style="{StaticResource TwkPrimaryButton}"
-                                        Content="Iniciar Varredura Completa" Margin="0,0,8,0" />
+                                        Content="Realizar Diagnóstico Completo" Margin="0,0,8,0" />
                                 <Button Command="{Binding CancelCommand}" Style="{StaticResource TwkSecondaryButton}"
                                         Content="Cancelar"
                                         Visibility="{Binding IsCollecting, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -486,9 +482,9 @@
                                             Background="{StaticResource TwkCardBrush}" CornerRadius="8" Padding="24" Margin="0,20,0,0">
                                         <StackPanel HorizontalAlignment="Center">
                                             <TextBlock Text="⚡" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,8" />
-                                            <TextBlock Text="Nenhuma triagem realizada ainda" FontWeight="SemiBold"
+                                            <TextBlock Text="Nenhum diagnóstico realizado ainda" FontWeight="SemiBold"
                                                        FontSize="13" Foreground="{StaticResource TwkTextBrush}" HorizontalAlignment="Center" />
-                                            <TextBlock Text="Marque o termo acima e clique em 'Iniciar Varredura Completa'."
+                                            <TextBlock Text="Marque o termo acima e clique em 'Realizar Diagnóstico Completo'."
                                                        FontSize="11.5" Foreground="{StaticResource TwkDimBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
                                         </StackPanel>
                                     </Border>
@@ -530,20 +526,36 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <!-- RAM -->
+                                        <!-- RAM (With Decoded Commercial Model e.g. XPG Spectrix D41) -->
                                         <Border Background="{StaticResource TwkCardBrush}" CornerRadius="8" Padding="14" Margin="0,0,0,10">
                                             <StackPanel>
-                                                <TextBlock Text="MEMÓRIA RAM" FontSize="9" FontFamily="{StaticResource MonoFont}"
-                                                           FontWeight="Bold" Foreground="{StaticResource TwkCyanBrush}" Margin="0,0,0,4" />
-                                                <TextBlock Text="{Binding Inventory.Ram.TotalFormatted}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TwkTextBrush}" />
-                                                <ItemsControl ItemsSource="{Binding Inventory.Ram.Modules}" Margin="0,6,0,0">
+                                                <Grid Margin="0,0,0,6">
+                                                    <TextBlock Text="MEMÓRIA RAM" FontSize="9" FontFamily="{StaticResource MonoFont}"
+                                                               FontWeight="Bold" Foreground="{StaticResource TwkCyanBrush}" VerticalAlignment="Center" />
+                                                    <Button HorizontalAlignment="Right" Command="{Binding CopyRamCommand}"
+                                                            Style="{StaticResource TwkCompactButton}" Content="Copiar Modelo da RAM" />
+                                                </Grid>
+
+                                                <TextBlock Text="{Binding Inventory.Ram.CommercialSummary, TargetNullValue={Binding Inventory.Ram.TotalFormatted}}"
+                                                           FontWeight="Bold" FontSize="14.5" Foreground="{StaticResource TwkTextBrush}" Margin="0,0,0,6" />
+
+                                                <ItemsControl ItemsSource="{Binding Inventory.Ram.Modules}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock FontSize="11" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,2,0,0">
-                                                                <Run Text="{Binding BankLabel, Mode=OneWay}" /><Run Text=": " />
-                                                                <Run Text="{Binding CapacityFormatted, Mode=OneWay}" /><Run Text=" @ " />
-                                                                <Run Text="{Binding Speed, Mode=OneWay}" />
-                                                            </TextBlock>
+                                                            <StackPanel Margin="0,3,0,6">
+                                                                <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TwkTextBrush}">
+                                                                    <Run Text="{Binding CommercialModel, Mode=OneWay}" />
+                                                                    <Run Text=" — " Foreground="{StaticResource TwkDimBrush}" />
+                                                                    <Run Text="{Binding CapacityFormatted, Mode=OneWay}" />
+                                                                    <Run Text=" @ " Foreground="{StaticResource TwkDimBrush}" />
+                                                                    <Run Text="{Binding Speed, Mode=OneWay}" />
+                                                                </TextBlock>
+                                                                <TextBlock FontSize="10.5" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkTextSecondaryBrush}" Margin="0,1,0,0">
+                                                                    <Run Text="{Binding BankLabel, Mode=OneWay}" />
+                                                                    <Run Text=" • Part Number: " />
+                                                                    <Run Text="{Binding PartNumber, Mode=OneWay}" Foreground="{StaticResource TwkGreenBrush}" />
+                                                                </TextBlock>
+                                                            </StackPanel>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -582,7 +594,7 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Text="ENVELOPE DE EVIDÊNCIA CRIPTOGRÁFICO" FontSize="10"
+                                <TextBlock Grid.Row="0" Text="LAUDO TÉCNICO &amp; CERTIFICADO DE AUDITORIA" FontSize="10"
                                            FontFamily="{StaticResource MonoFont}" FontWeight="Bold"
                                            Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,12" />
 
@@ -590,12 +602,16 @@
                                 <Border Grid.Row="1" Background="{StaticResource TwkCardBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                                     <StackPanel>
                                         <Grid Margin="0,0,0,6">
-                                            <TextBlock Text="HASH SHA-256 (IMUTÁVEL)" FontSize="9" FontFamily="{StaticResource MonoFont}"
+                                            <TextBlock Text="SELO DE INTEGRIDADE (SHA-256)" FontSize="9" FontFamily="{StaticResource MonoFont}"
                                                        FontWeight="Bold" Foreground="{StaticResource TwkGreenBrush}" VerticalAlignment="Center" />
-                                            <Button HorizontalAlignment="Right" Command="{Binding CopyDigestCommand}"
-                                                    Style="{StaticResource TwkCompactButton}" Content="Copiar Hash" />
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <Button Command="{Binding CopySpecsCommand}" Margin="0,0,6,0"
+                                                        Style="{StaticResource TwkCompactButton}" Content="Copiar Especificações" />
+                                                <Button Command="{Binding CopyDigestCommand}"
+                                                        Style="{StaticResource TwkCompactButton}" Content="Copiar Selo" />
+                                            </StackPanel>
                                         </Grid>
-                                        <TextBox Text="{Binding EvidenceDigest, Mode=OneWay, TargetNullValue='Aguardando triagem...'}"
+                                        <TextBox Text="{Binding EvidenceDigest, Mode=OneWay, TargetNullValue='Aguardando diagnóstico...'}"
                                                  IsReadOnly="True" BorderThickness="0" Background="Transparent"
                                                  Foreground="{StaticResource TwkTextBrush}"
                                                  FontFamily="{StaticResource MonoFont}" FontSize="10.5" TextWrapping="Wrap" />
@@ -605,7 +621,7 @@
                                 <!-- JSON Viewer -->
                                 <Border Grid.Row="2" Background="#050608" CornerRadius="8" Padding="10"
                                         BorderBrush="{StaticResource TwkBorderSubtleBrush}" BorderThickness="1">
-                                    <TextBox Text="{Binding SerializedEvidence, Mode=OneWay, TargetNullValue='// O JSON sanitizado e assinado da evidência aparecerá aqui'}"
+                                    <TextBox Text="{Binding SerializedEvidence, Mode=OneWay, TargetNullValue='// O relatório técnico estruturado com assinatura aparecerá aqui'}"
                                              IsReadOnly="True" AcceptsReturn="True"
                                              VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                                              Background="Transparent" Foreground="#68D391"
@@ -618,7 +634,7 @@
                                     <Button Command="{Binding SyncCloudCommand}" Style="{StaticResource TwkPrimaryButton}"
                                             Content="Sincronizar com Nuvem" Margin="0,0,8,0" />
                                     <Button Command="{Binding ExportCommand}" Style="{StaticResource TwkSecondaryButton}"
-                                            Content="Exportar JSON" />
+                                            Content="Exportar Laudo JSON" />
                                 </StackPanel>
                             </Grid>
                         </Border>

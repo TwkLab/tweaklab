@@ -28,13 +28,15 @@ public record RamModule(
     string Speed,
     string Manufacturer,
     string PartNumber,
-    string BankLabel
+    string BankLabel,
+    string? CommercialModel = null
 );
 
 public record RamInfo(
     string TotalFormatted,
     long TotalBytes,
-    IReadOnlyList<RamModule> Modules
+    IReadOnlyList<RamModule> Modules,
+    string? CommercialSummary = null
 );
 
 public record GpuInfo(
