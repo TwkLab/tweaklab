@@ -252,13 +252,13 @@
                             <Border Grid.Column="0" Margin="0,0,12,0" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                                 <StackPanel>
                                     <TextBlock Text="PROCESSADOR (CPU)" FontWeight="Bold" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,12" />
-                                    <TextBlock Text="{Binding CpuUsage, StringFormat='{}{0:F0}%'}" FontSize="36" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" />
-                                    <ProgressBar Value="{Binding CpuUsage}" Minimum="0" Maximum="100" Height="8" Margin="0,8,0,16" Foreground="{StaticResource TwkGreenBrush}" Background="#111B11" BorderThickness="0" />
+                                    <TextBlock Text="{Binding CpuUsage, Mode=OneWay, StringFormat='{}{0:F0}%'}" FontSize="36" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" />
+                                    <ProgressBar Value="{Binding CpuUsage, Mode=OneWay}" Minimum="0" Maximum="100" Height="8" Margin="0,8,0,16" Foreground="{StaticResource TwkGreenBrush}" Background="#111B11" BorderThickness="0" />
                                     
                                     <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="10">
                                         <StackPanel>
                                             <TextBlock Text="Temperatura Estimada (ACPI):" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
-                                            <TextBlock Text="{Binding CpuTempFormatted}" FontSize="13" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding CpuTempFormatted, Mode=OneWay}" FontSize="13" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" Margin="0,4,0,0" />
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
@@ -268,13 +268,13 @@
                             <Border Grid.Column="1" Margin="0,0,12,0" Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                                 <StackPanel>
                                     <TextBlock Text="MEMÓRIA RAM" FontWeight="Bold" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TwkGreenBrush}" Margin="0,0,0,12" />
-                                    <TextBlock Text="{Binding RamUsage, StringFormat='{}{0:F0}%'}" FontSize="36" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" />
-                                    <ProgressBar Value="{Binding RamUsage}" Minimum="0" Maximum="100" Height="8" Margin="0,8,0,16" Foreground="{StaticResource TwkGreenBrush}" Background="#111B11" BorderThickness="0" />
+                                    <TextBlock Text="{Binding RamUsage, Mode=OneWay, StringFormat='{}{0:F0}%'}" FontSize="36" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" />
+                                    <ProgressBar Value="{Binding RamUsage, Mode=OneWay}" Minimum="0" Maximum="100" Height="8" Margin="0,8,0,16" Foreground="{StaticResource TwkGreenBrush}" Background="#111B11" BorderThickness="0" />
 
                                     <Border Background="{StaticResource TwkCardBrush}" CornerRadius="6" Padding="10">
                                         <StackPanel>
                                             <TextBlock Text="Uso Físico Alocado:" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TwkMutedBrush}" />
-                                            <TextBlock Text="{Binding RamUsageFormatted}" FontSize="12" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding RamUsageFormatted, Mode=OneWay}" FontSize="12" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TwkTextBrush}" Margin="0,4,0,0" />
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
