@@ -89,7 +89,15 @@ function NewTicketContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!consent) {
-      alert("Por favor, confirme a autorização de análise preliminar.");
+      alert("Por favor, confirme a autorização de triagem e termos de transparência.");
+      return;
+    }
+
+    const cleanTitle = title.trim();
+    const cleanDesc = description.trim();
+
+    if (!cleanTitle || !cleanDesc) {
+      alert("Por favor, preencha o título resumido e a descrição dos sintomas do seu computador.");
       return;
     }
 
@@ -100,14 +108,14 @@ function NewTicketContent() {
     const newId = `twk-t-${Date.now()}`;
     const newCode = `TWK-2026-${randomNum}`;
 
-    const clientName = currentUser?.name || loginName || "Cliente";
-    const clientEmail = currentUser?.email || loginEmail || "cliente@tweaklab.com";
+    const clientName = currentUser?.name?.trim() || loginName.trim() || "Cliente";
+    const clientEmail = currentUser?.email?.trim() || loginEmail.trim() || "cliente@tweaklab.com";
 
     const newTicket: Ticket = {
       id: newId,
       code: newCode,
-      title: title || "Solicitação de diagnóstico técnico",
-      description: description,
+      title: cleanTitle,
+      description: cleanDesc,
       category,
       priority,
       status: "novo",

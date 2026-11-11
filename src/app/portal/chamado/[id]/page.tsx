@@ -15,6 +15,8 @@ import {
   Clock,
   Printer,
   Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 import { initialTickets } from "@/data/mockTickets";
 import { Ticket, TicketMessage } from "@/types";
@@ -25,8 +27,17 @@ export default function TicketDetailPage() {
   const ticketId = params.id as string;
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"geral" | "benchmarks" | "auditoria" | "chat">("geral");
   const [newMessage, setNewMessage] = useState("");
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleCopyCode = () => {
+    if (!ticket) return;
+    navigator.clipboard.writeText(ticket.code);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem("twk_tickets");
@@ -42,18 +53,42 @@ export default function TicketDetailPage() {
     }
 
     const found = list.find((t) => t.id === ticketId);
-    if (found) {
-      setTicket(found);
-    } else {
-      // fallback to first ticket if not found
-      setTicket(list[0] || initialTickets[0]);
-    }
+    setTicket(found || null);
+    setLoading(false);
   }, [ticketId]);
 
-  if (!ticket) {
+  if (loading) {
     return (
       <div className="py-20 text-center font-mono text-xs text-twk-muted">
         Carregando dados do chamado...
+      </div>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <div className="py-20 max-w-md mx-auto text-center space-y-4 px-4">
+        <div className="w-12 h-12 mx-auto rounded-xl bg-twk-surface border border-twk-border flex items-center justify-center text-amber-400">
+          <Clock className="w-6 h-6" />
+        </div>
+        <h2 className="text-base font-bold text-twk-text">Chamado Não Encontrado</h2>
+        <p className="text-xs text-twk-muted leading-relaxed">
+          O chamado solicitado não foi localizado ou ainda não foi registrado neste navegador.
+        </p>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Link
+            href="/portal"
+            className="px-4 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs font-mono text-twk-text hover:border-twk-green/40"
+          >
+            Voltar ao Portal
+          </Link>
+          <Link
+            href="/portal/novo"
+            className="px-4 py-2 rounded-xl bg-twk-green hover:bg-twk-green-hover text-twk-bg font-bold text-xs font-mono"
+          >
+            Abrir Chamado
+          </Link>
+        </div>
       </div>
     );
   }
@@ -155,9 +190,29 @@ export default function TicketDetailPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-twk-border">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="font-mono text-base font-extrabold text-twk-text">
-                {ticket.code}
-              </span>
+              <div className="flex items-center gap-1.5 bg-twk-surface px-2.5 py-1 rounded-lg border border-twk-border/80">
+                <span className="font-mono text-sm sm:text-base font-extrabold text-twk-text">
+                  {ticket.code}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="p-1 rounded hover:bg-twk-card text-twk-dim hover:text-twk-green transition-colors inline-flex items-center gap-1 text-[10px] font-mono cursor-pointer"
+                  title="Copiar código do chamado"
+                >
+                  {copiedCode ? (
+                    <>
+                      <Check className="w-3 h-3 text-twk-green" />
+                      <span className="text-[10px] text-twk-green font-bold">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span className="text-[10px] hidden sm:inline">Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <span
                 className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${theme.categoryBadge}`}
               >

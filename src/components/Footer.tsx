@@ -111,6 +111,22 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/portal/perfil"
+                  className="hover:text-twk-green transition-colors"
+                >
+                  Meu Perfil & Peças do PC
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/#faq"
+                  className="hover:text-twk-green transition-colors"
+                >
+                  Dúvidas Frequentes (FAQ)
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/termos"
                   className="hover:text-twk-green transition-colors"
                 >

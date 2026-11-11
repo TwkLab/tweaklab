@@ -22,7 +22,15 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "TweakLab Team" }],
   icons: {
-    icon: "/branding/twk-symbol.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png" },
+      { url: "/branding/twk-symbol.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   openGraph: {
     title: "TweakLab (TWK) — Diagnóstico & Otimização Windows com Evidências",

@@ -22,6 +22,7 @@ export default function ReportPage() {
   const ticketId = params.id as string;
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("twk_tickets");
@@ -37,13 +38,37 @@ export default function ReportPage() {
     }
 
     const found = list.find((t) => t.id === ticketId);
-    setTicket(found || list[0] || initialTickets[0]);
+    setTicket(found || null);
+    setLoading(false);
   }, [ticketId]);
 
-  if (!ticket) {
+  if (loading) {
     return (
       <div className="py-20 text-center font-mono text-xs text-twk-muted">
         Carregando relatório técnico...
+      </div>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <div className="py-20 max-w-md mx-auto text-center space-y-4 px-4">
+        <div className="w-12 h-12 mx-auto rounded-xl bg-twk-surface border border-twk-border flex items-center justify-center text-amber-400">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <h2 className="text-base font-bold text-twk-text">Relatório não encontrado</h2>
+        <p className="text-xs text-twk-muted">
+          Este chamado ainda não possui relatório técnico emitido ou o código informado é inválido.
+        </p>
+        <div>
+          <Link
+            href="/portal"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs font-mono text-twk-green hover:border-twk-green/40"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Voltar ao Portal do Cliente</span>
+          </Link>
+        </div>
       </div>
     );
   }

@@ -13,6 +13,8 @@ import {
   Cpu,
   History,
   FileCheck2,
+  Copy,
+  Check,
 } from "lucide-react";
 import { initialTickets } from "@/data/mockTickets";
 import { Ticket, ServiceAction, BenchmarkMetric, TicketStatus } from "@/types";
@@ -23,6 +25,15 @@ export default function TechnicianWorkbenchPage() {
   const ticketId = params.id as string;
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleCopyCode = () => {
+    if (!ticket) return;
+    navigator.clipboard.writeText(ticket.code);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
 
   // New Action Form State
   const [actionCategory, setActionCategory] = useState<
@@ -74,12 +85,36 @@ export default function TechnicianWorkbenchPage() {
       setTicket(found);
       setTechNotes(found.technicianNotes || "");
     }
+    setLoading(false);
   }, [ticketId]);
 
-  if (!ticket) {
+  if (loading) {
     return (
       <div className="py-20 text-center font-mono text-xs text-twk-muted">
         Carregando chamado técnico...
+      </div>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <div className="py-20 max-w-md mx-auto text-center space-y-4 px-4">
+        <div className="w-12 h-12 mx-auto rounded-xl bg-twk-surface border border-twk-border flex items-center justify-center text-amber-400">
+          <Terminal className="w-6 h-6" />
+        </div>
+        <h2 className="text-base font-bold text-twk-text">Chamado Não Localizado</h2>
+        <p className="text-xs text-twk-muted leading-relaxed">
+          O chamado informado não consta na base de dados ativa deste navegador.
+        </p>
+        <div>
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs font-mono text-twk-green hover:border-twk-green/40"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Voltar à Fila de Chamados</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -230,9 +265,29 @@ export default function TechnicianWorkbenchPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-twk-border">
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="text-base font-bold font-mono text-twk-text">
-                {ticket.code}
-              </span>
+              <div className="flex items-center gap-1.5 bg-twk-surface px-2.5 py-1 rounded-lg border border-twk-border/80">
+                <span className="text-sm sm:text-base font-bold font-mono text-twk-text">
+                  {ticket.code}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="p-1 rounded hover:bg-twk-card text-twk-dim hover:text-twk-green transition-colors inline-flex items-center gap-1 text-[10px] font-mono cursor-pointer"
+                  title="Copiar código do chamado"
+                >
+                  {copiedCode ? (
+                    <>
+                      <Check className="w-3 h-3 text-twk-green" />
+                      <span className="text-[10px] text-twk-green font-bold">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span className="text-[10px] hidden sm:inline">Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <span
                 className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${theme.categoryBadge}`}
               >

@@ -58,7 +58,7 @@ export default function Hero() {
               </Link>
 
               <Link
-                href="#evidencias"
+                href="/#evidencias"
                 className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-twk-surface hover:bg-twk-card border border-twk-border hover:border-twk-green/40 text-twk-text font-medium text-sm transition-all flex items-center justify-center gap-2"
               >
                 <BarChart3 className="w-4 h-4 text-twk-green" />

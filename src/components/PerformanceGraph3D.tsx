@@ -334,10 +334,12 @@ export default function PerformanceGraph3D() {
       const dy = e.clientY - prevMouse.y;
 
       stageGroup.rotation.y += dx * 0.008;
-      stageGroup.rotation.x += dy * 0.008;
 
-      // Clamp vertical tilt
-      stageGroup.rotation.x = Math.max(-0.2, Math.min(0.65, stageGroup.rotation.x));
+      // On desktop mouse we tilt vertically; on mobile touch we keep pitch stable so vertical page scroll is smooth
+      if (e.pointerType !== "touch") {
+        stageGroup.rotation.x += dy * 0.008;
+        stageGroup.rotation.x = Math.max(-0.2, Math.min(0.65, stageGroup.rotation.x));
+      }
       prevMouse = { x: e.clientX, y: e.clientY };
     };
 
@@ -437,7 +439,7 @@ export default function PerformanceGraph3D() {
       {/* 3D Canvas */}
       <div
         ref={mountRef}
-        className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
+        className="w-full h-full cursor-grab active:cursor-grabbing touch-pan-y"
       />
 
       {/* Top Header Overlay */}
@@ -457,38 +459,38 @@ export default function PerformanceGraph3D() {
         </div>
       </div>
 
-      {/* Floating 3D Metric Labels Overlay (Overlaying the Left/Right bar pairs) */}
-      <div className="absolute top-20 left-4 right-4 pointer-events-none hidden sm:flex justify-around text-xs font-mono">
+      {/* Floating 3D Metric Labels Overlay (Responsive for both Mobile & Desktop) */}
+      <div className="absolute top-20 left-3 right-3 sm:left-4 sm:right-4 pointer-events-none flex justify-between sm:justify-around gap-2 text-xs font-mono">
         {/* Left Column: 1% Low Focus */}
-        <div className="p-2.5 rounded-xl bg-twk-surface/90 border border-twk-green/40 backdrop-blur-md space-y-1 text-center shadow-twk-glow-sm">
-          <div className="text-[10px] font-bold text-twk-green uppercase tracking-wider flex items-center justify-center gap-1">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-twk-surface/90 border border-twk-green/40 backdrop-blur-md space-y-0.5 sm:space-y-1 text-center shadow-twk-glow-sm flex-1 sm:flex-initial">
+          <div className="text-[9px] sm:text-[10px] font-bold text-twk-green uppercase tracking-wider flex items-center justify-center gap-1">
             <Activity className="w-3 h-3" />
-            1% Low (Sem Travamentos)
+            <span>1% Low (Sem Travas)</span>
           </div>
-          <div className="flex items-center justify-center gap-3 text-xs">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-3 text-[11px] sm:text-xs">
             <span className="text-rose-400 font-bold">
-              Antes: {currentScenario.before.low1Percent} FPS
+              {currentScenario.before.low1Percent} FPS
             </span>
             <span className="text-twk-dim">→</span>
-            <span className="text-twk-green font-extrabold text-sm">
-              Depois: {currentScenario.after.low1Percent} FPS
+            <span className="text-twk-green font-extrabold text-xs sm:text-sm">
+              {currentScenario.after.low1Percent} FPS
             </span>
           </div>
         </div>
 
         {/* Right Column: Average FPS Focus */}
-        <div className="p-2.5 rounded-xl bg-twk-surface/90 border border-twk-border backdrop-blur-md space-y-1 text-center">
-          <div className="text-[10px] font-bold text-twk-muted uppercase tracking-wider flex items-center justify-center gap-1">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-twk-surface/90 border border-twk-border backdrop-blur-md space-y-0.5 sm:space-y-1 text-center flex-1 sm:flex-initial">
+          <div className="text-[9px] sm:text-[10px] font-bold text-twk-muted uppercase tracking-wider flex items-center justify-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            Taxa Média de FPS
+            <span>Taxa Média de FPS</span>
           </div>
-          <div className="flex items-center justify-center gap-3 text-xs">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-3 text-[11px] sm:text-xs">
             <span className="text-twk-dim">
-              Antes: {currentScenario.before.avgFps} FPS
+              {currentScenario.before.avgFps} FPS
             </span>
             <span className="text-twk-dim">→</span>
-            <span className="text-twk-text font-bold text-sm">
-              Depois: {currentScenario.after.avgFps} FPS
+            <span className="text-twk-text font-bold text-xs sm:text-sm">
+              {currentScenario.after.avgFps} FPS
             </span>
           </div>
         </div>
