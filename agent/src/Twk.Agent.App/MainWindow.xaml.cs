@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using Twk.Agent.App.ViewModels;
 using Twk.Agent.Infrastructure.Serialization;
 using Twk.Agent.Windows.Collectors;

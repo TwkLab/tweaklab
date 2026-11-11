@@ -1,0 +1,16 @@
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\bin\Release\net8.0\Twk.Agent.Infrastructure.deps.json
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\bin\Release\net8.0\Twk.Agent.Infrastructure.dll
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\bin\Release\net8.0\Twk.Agent.Infrastructure.pdb
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\bin\Release\net8.0\Twk.Agent.Core.dll
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\bin\Release\net8.0\Twk.Agent.Core.pdb
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agent.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agent.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agent.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agent.Infrastructure.AssemblyInfo.cs
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agent.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agent.Infrastructure.sourcelink.json
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agen.B1A8B1E4.Up2Date
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agent.Infrastructure.dll
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\refint\Twk.Agent.Infrastructure.dll
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\Twk.Agent.Infrastructure.pdb
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Infrastructure\obj\Release\net8.0\ref\Twk.Agent.Infrastructure.dll

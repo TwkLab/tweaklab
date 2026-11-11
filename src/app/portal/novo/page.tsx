@@ -90,6 +90,35 @@ function NewTicketContent() {
     reader.readAsText(file);
   };
 
+  // Auto-fetch synced evidence from cloud for this user
+  const checkCloudEvidence = async (email: string) => {
+    try {
+      const res = await fetch(`/api/agent-sync?email=${encodeURIComponent(email)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.found && data.envelope) {
+        const env = data.envelope;
+        const payload = env.payload;
+        if (payload?.cpu?.model) setCpu(payload.cpu.model);
+        if (payload?.gpus?.[0]?.model) setGpu(payload.gpus[0].model);
+        if (payload?.ram?.totalFormatted) {
+          const mod = payload.ram.modules?.[0];
+          setRam(`${payload.ram.totalFormatted} ${mod?.speed || ""} ${mod?.partNumber || ""}`.trim());
+        }
+        if (payload?.operatingSystem?.caption) {
+          setOs(`${payload.operatingSystem.caption} (${payload.operatingSystem.osArchitecture || ""})`.trim());
+        }
+        if (payload?.disks?.[0]?.model) {
+          setStorage(`${payload.disks[0].model} (${payload.disks[0].sizeFormatted || ""})`.trim());
+        }
+
+        setEvidenceDigest(env.consent?.payloadDigest || "sha256:nuvem");
+        setEvidenceRawJson(JSON.stringify(env, null, 2));
+        setAgentImportSuccess(true);
+      }
+    } catch {}
+  };
+
   // Load client user session
   useEffect(() => {
     const stored = localStorage.getItem("twk_client_user");
@@ -104,6 +133,9 @@ function NewTicketContent() {
           if (user.device.os) setOs(user.device.os);
           if (user.device.storage) setStorage(user.device.storage);
           setHasImportedProfile(true);
+        }
+        if (user.email) {
+          checkCloudEvidence(user.email);
         }
       } catch {}
     }
@@ -129,6 +161,7 @@ function NewTicketContent() {
 
     localStorage.setItem("twk_client_user", JSON.stringify(user));
     setCurrentUser(user);
+    checkCloudEvidence(user.email);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

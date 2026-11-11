@@ -1,15 +1,20 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using Twk.Agent.Core.Interfaces;
 using Twk.Agent.Core.Models;
+using Twk.Agent.Core.Services;
+using Twk.Agent.Infrastructure.Services;
+using Twk.Agent.Windows.Collectors;
 
 namespace Twk.Agent.App.ViewModels;
 
@@ -17,23 +22,74 @@ public class MainViewModel : INotifyPropertyChanged
 {
     private readonly IHardwareCollector _collector;
     private readonly IEvidenceSerializer _serializer;
+    private readonly WindowsLiveTelemetryService _telemetryService;
+    private readonly CloudSyncService _cloudSyncService;
+    private readonly DispatcherTimer _telemetryTimer;
     private CancellationTokenSource? _cts;
 
+    // View Navigation
+    private int _selectedTabIndex = 0; // 0 = Visao Geral & Hardware, 1 = Monitoramento em Tempo Real, 2 = Loja de Ferramentas / Tecnico, 3 = Minha Conta & Sync
+
+    // State
     private bool _isCollecting;
     private bool _hasConsent;
     private string _statusMessage = "Pronto para análise local. Nenhum dado coletado.";
     private HardwareInventory? _inventory;
     private string? _serializedEvidence;
     private string? _evidenceDigest;
+    private EvidenceEnvelope<HardwareInventory>? _currentEnvelope;
+
+    // User Profile & Sync
+    private string _userName = "";
+    private string _userEmail = "";
+    private bool _isLoggedIn;
+    private bool _isSyncing;
+    private string _syncStatusMessage = "Não sincronizado com a nuvem.";
+
+    // Live Metrics
+    private double _cpuUsage;
+    private string _cpuTempFormatted = "-- °C";
+    private double _ramUsage;
+    private string _ramUsageFormatted = "-- GB / -- GB";
+    private string _gpuName = "Detectando...";
+    private string _gpuTempFormatted = "-- °C";
 
     public MainViewModel(IHardwareCollector collector, IEvidenceSerializer serializer)
     {
         _collector = collector;
         _serializer = serializer;
+        _telemetryService = new WindowsLiveTelemetryService();
+        _cloudSyncService = new CloudSyncService();
 
+        Tools = new ObservableCollection<TechnicianTool>(TechnicianToolCatalog.GetTools());
+
+        // Setup Commands
         CollectCommand = new RelayCommand(async _ => await StartCollectionAsync(), _ => HasConsent && !IsCollecting);
         CancelCommand = new RelayCommand(_ => CancelCollection(), _ => IsCollecting);
         ExportCommand = new RelayCommand(_ => ExportEvidence(), _ => Inventory != null);
+        LoginCommand = new RelayCommand(_ => PerformLogin(), _ => !string.IsNullOrWhiteSpace(UserEmail));
+        LogoutCommand = new RelayCommand(_ => PerformLogout());
+        SyncCloudCommand = new RelayCommand(async _ => await SyncWithCloudAsync(), _ => IsLoggedIn && Inventory != null && !IsSyncing);
+        OpenToolUrlCommand = new RelayCommand(url => OpenExternalUrl(url?.ToString()));
+
+        // Check local saved user
+        LoadSavedUser();
+
+        // Setup Live Telemetry Timer (every 1.5s)
+        _telemetryTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1.5)
+        };
+        _telemetryTimer.Tick += async (s, e) => await UpdateTelemetryTickAsync();
+        _telemetryTimer.Start();
+    }
+
+    public ObservableCollection<TechnicianTool> Tools { get; }
+
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set => SetField(ref _selectedTabIndex, value);
     }
 
     public bool HasConsent
@@ -52,7 +108,7 @@ public class MainViewModel : INotifyPropertyChanged
     public bool IsCollecting
     {
         get => _isCollecting;
-        set
+        private set
         {
             if (SetField(ref _isCollecting, value))
             {
@@ -67,90 +123,248 @@ public class MainViewModel : INotifyPropertyChanged
     public string StatusMessage
     {
         get => _statusMessage;
-        set => SetField(ref _statusMessage, value);
+        private set => SetField(ref _statusMessage, value);
     }
 
     public HardwareInventory? Inventory
     {
         get => _inventory;
-        set
+        private set
         {
             if (SetField(ref _inventory, value))
             {
-                OnPropertyChanged(nameof(HasInventory));
+                OnPropertyChanged(nameof(HasHardwareData));
                 CommandManager.InvalidateRequerySuggested();
             }
         }
     }
 
-    public bool HasInventory => Inventory != null;
+    public bool HasHardwareData => Inventory != null;
 
     public string? SerializedEvidence
     {
         get => _serializedEvidence;
-        set => SetField(ref _serializedEvidence, value);
+        private set => SetField(ref _serializedEvidence, value);
     }
 
     public string? EvidenceDigest
     {
         get => _evidenceDigest;
-        set => SetField(ref _evidenceDigest, value);
+        private set => SetField(ref _evidenceDigest, value);
     }
 
+    // User Session
+    public string UserName
+    {
+        get => _userName;
+        set => SetField(ref _userName, value);
+    }
+
+    public string UserEmail
+    {
+        get => _userEmail;
+        set => SetField(ref _userEmail, value);
+    }
+
+    public bool IsLoggedIn
+    {
+        get => _isLoggedIn;
+        private set
+        {
+            if (SetField(ref _isLoggedIn, value))
+            {
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    public bool IsSyncing
+    {
+        get => _isSyncing;
+        private set
+        {
+            if (SetField(ref _isSyncing, value))
+            {
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    public string SyncStatusMessage
+    {
+        get => _syncStatusMessage;
+        private set => SetField(ref _syncStatusMessage, value);
+    }
+
+    // Live Metrics
+    public double CpuUsage
+    {
+        get => _cpuUsage;
+        private set => SetField(ref _cpuUsage, value);
+    }
+
+    public string CpuTempFormatted
+    {
+        get => _cpuTempFormatted;
+        private set => SetField(ref _cpuTempFormatted, value);
+    }
+
+    public double RamUsage
+    {
+        get => _ramUsage;
+        private set => SetField(ref _ramUsage, value);
+    }
+
+    public string RamUsageFormatted
+    {
+        get => _ramUsageFormatted;
+        private set => SetField(ref _ramUsageFormatted, value);
+    }
+
+    public string GpuName
+    {
+        get => _gpuName;
+        private set => SetField(ref _gpuName, value);
+    }
+
+    public string GpuTempFormatted
+    {
+        get => _gpuTempFormatted;
+        private set => SetField(ref _gpuTempFormatted, value);
+    }
+
+    // Commands
     public ICommand CollectCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand ExportCommand { get; }
+    public ICommand LoginCommand { get; }
+    public ICommand LogoutCommand { get; }
+    public ICommand SyncCloudCommand { get; }
+    public ICommand OpenToolUrlCommand { get; }
 
-    private async Task StartCollectionAsync()
+    private void PerformLogin()
     {
-        if (!HasConsent) return;
+        if (string.IsNullOrWhiteSpace(UserEmail)) return;
+        IsLoggedIn = true;
+        SyncStatusMessage = "Conectado. Pronto para sincronizar suas evidências com a nuvem TweakLab.";
+        SaveUserLocal();
+    }
+
+    private void PerformLogout()
+    {
+        IsLoggedIn = false;
+        UserName = "";
+        UserEmail = "";
+        SyncStatusMessage = "Sessão encerrada.";
+        try
+        {
+            var path = GetUserDataFilePath();
+            if (File.Exists(path)) File.Delete(path);
+        }
+        catch {}
+    }
+
+    private async Task SyncWithCloudAsync()
+    {
+        if (!IsLoggedIn || _currentEnvelope == null) return;
+
+        IsSyncing = true;
+        SyncStatusMessage = "Enviando evidências para o portal TweakLab...";
+
+        try
+        {
+            var res = await _cloudSyncService.SyncEvidenceAsync(UserEmail, _currentEnvelope);
+            SyncStatusMessage = res.Message;
+        }
+        catch (Exception ex)
+        {
+            SyncStatusMessage = $"Falha no envio: {ex.Message}";
+        }
+        finally
+        {
+            IsSyncing = false;
+        }
+    }
+
+    private async Task UpdateTelemetryTickAsync()
+    {
+        try
+        {
+            var snapshot = await _telemetryService.GetSnapshotAsync();
+            CpuUsage = snapshot.CpuUsagePercent;
+            CpuTempFormatted = snapshot.CpuTemperatureC.HasValue ? $"{snapshot.CpuTemperatureC.Value:F1} °C" : "Normal (WMI ACPI N/D)";
+            RamUsage = snapshot.RamUsagePercent;
+            RamUsageFormatted = $"{snapshot.RamUsedGb:F1} GB / {snapshot.RamTotalGb:F1} GB ({snapshot.RamUsagePercent:F0}%)";
+            if (!string.IsNullOrEmpty(snapshot.GpuName))
+            {
+                GpuName = snapshot.GpuName;
+            }
+            GpuTempFormatted = "Monitor via HWiNFO64";
+        }
+        catch
+        {
+            // silent ignore
+        }
+    }
+
+    public async Task StartCollectionAsync()
+    {
+        if (!HasConsent || IsCollecting) return;
 
         IsCollecting = true;
-        StatusMessage = "Coletando inventário local seguro via WMI/CIM...";
+        StatusMessage = "Lendo WMI e barramentos do sistema...";
         _cts = new CancellationTokenSource();
 
         try
         {
-            var result = await _collector.CollectAsync(_cts.Token);
-            Inventory = result;
+            var inventory = await _collector.CollectAsync(_cts.Token);
+            Inventory = inventory;
 
-            var consent = new ConsentReceipt(
-                NoticeVersion: "1.0-local-beta",
-                Categories: new[] { "cpu", "ram", "gpu", "disks", "motherboard", "os" },
+            var consentRecord = new ConsentReceipt(
+                NoticeVersion: "1.0",
+                Categories: new[] { "hardware_inventory", "os_version", "disk_health" },
                 ConfirmedAtUtc: DateTime.UtcNow,
-                PayloadDigest: ""
+                PayloadDigest: "calc-pending"
             );
 
-            var tempEnvelope = new EvidenceEnvelope<HardwareInventory>(
+            var envelope = new EvidenceEnvelope<HardwareInventory>(
                 SchemaVersion: 1,
                 ClientEvidenceId: Guid.NewGuid(),
-                AgentVersion: "0.1.0-beta",
+                AgentVersion: "0.2.0",
                 LinkId: null,
-                CapturedAtUtc: result.CapturedAtUtc,
-                Kind: "inventory",
-                Consent: consent,
-                Payload: result
+                CapturedAtUtc: DateTime.UtcNow,
+                Kind: "hardware_inventory",
+                Consent: consentRecord,
+                Payload: inventory
             );
 
-            var rawJson = _serializer.SerializeSanitized(tempEnvelope);
-            var digest = _serializer.ComputeDigest(rawJson);
+            var initialJson = _serializer.SerializeSanitized(envelope);
+            var computedDigest = _serializer.ComputeDigest(initialJson);
 
-            // Re-envelope with verified digest
-            var finalConsent = consent with { PayloadDigest = digest };
-            var finalEnvelope = tempEnvelope with { Consent = finalConsent };
+            var sealedEnvelope = envelope with
+            {
+                Consent = consentRecord with { PayloadDigest = computedDigest }
+            };
 
-            SerializedEvidence = _serializer.SerializeSanitized(finalEnvelope);
-            EvidenceDigest = digest;
+            _currentEnvelope = sealedEnvelope;
+            SerializedEvidence = _serializer.SerializeSanitized(sealedEnvelope);
+            EvidenceDigest = computedDigest;
 
-            StatusMessage = $"✓ Inventário coletado com sucesso às {result.CapturedAtUtc.ToLocalTime():HH:mm:ss}. Integridade SHA-256 gerada.";
+            StatusMessage = $"Triagem concluída com sucesso! Digest: {computedDigest[..18]}...";
+
+            // Auto-sync if user is logged in
+            if (IsLoggedIn && !string.IsNullOrWhiteSpace(UserEmail))
+            {
+                _ = SyncWithCloudAsync();
+            }
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Coleta cancelada pelo usuário. Nenhum dado retido.";
+            StatusMessage = "Coleta cancelada pelo usuário.";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Falha na coleta de inventário: {ex.Message}";
+            StatusMessage = $"Erro durante a coleta: {ex.Message}";
         }
         finally
         {
@@ -160,7 +374,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private void CancelCollection()
+    public void CancelCollection()
     {
         _cts?.Cancel();
     }
@@ -171,9 +385,9 @@ public class MainViewModel : INotifyPropertyChanged
 
         var sfd = new SaveFileDialog
         {
-            Filter = "Arquivo JSON de Evidência (*.json)|*.json",
-            FileName = $"twk-evidencia-inventario-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json",
-            Title = "Exportar Evidência Técnica Auditável"
+            Filter = "Envelope de Evidência JSON (*.json)|*.json",
+            FileName = $"twk-evidence-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json",
+            Title = "Exportar Envelope de Evidência TweakLab"
         };
 
         if (sfd.ShowDialog() == true)
@@ -181,19 +395,75 @@ public class MainViewModel : INotifyPropertyChanged
             try
             {
                 File.WriteAllText(sfd.FileName, SerializedEvidence);
-                MessageBox.Show($"Evidência exportada com sucesso!\n\nArquivo: {sfd.FileName}\nDigest SHA-256: {EvidenceDigest}",
-                    "TweakLab Agent", MessageBoxButton.OK, MessageBoxImage.Information);
+                StatusMessage = $"Evidência exportada com sucesso em: {Path.GetFileName(sfd.FileName)}";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao salvar arquivo: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                StatusMessage = $"Erro ao salvar o arquivo: {ex.Message}";
             }
         }
     }
 
+    private static void OpenExternalUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Não foi possível abrir o link: {ex.Message}", "TweakLab", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void SaveUserLocal()
+    {
+        try
+        {
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TweakLab");
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            var file = Path.Combine(dir, "user.txt");
+            File.WriteAllLines(file, new[] { UserName, UserEmail });
+        }
+        catch {}
+    }
+
+    private void LoadSavedUser()
+    {
+        try
+        {
+            var path = GetUserDataFilePath();
+            if (File.Exists(path))
+            {
+                var lines = File.ReadAllLines(path);
+                if (lines.Length >= 2)
+                {
+                    UserName = lines[0];
+                    UserEmail = lines[1];
+                    if (!string.IsNullOrWhiteSpace(UserEmail))
+                    {
+                        IsLoggedIn = true;
+                        SyncStatusMessage = "Conectado automaticamente com a conta salva.";
+                    }
+                }
+            }
+        }
+        catch {}
+    }
+
+    private static string GetUserDataFilePath()
+    {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TweakLab", "user.txt");
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -219,6 +489,7 @@ public class RelayCommand : ICommand
     }
 
     public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
+
     public void Execute(object? parameter) => _execute(parameter);
 
     public event EventHandler? CanExecuteChanged

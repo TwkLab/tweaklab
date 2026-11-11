@@ -1,0 +1,16 @@
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\bin\Release\net8.0-windows\Twk.Agent.Windows.deps.json
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\bin\Release\net8.0-windows\Twk.Agent.Windows.dll
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\bin\Release\net8.0-windows\Twk.Agent.Windows.pdb
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\bin\Release\net8.0-windows\Twk.Agent.Core.dll
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\bin\Release\net8.0-windows\Twk.Agent.Core.pdb
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agent.Windows.csproj.AssemblyReference.cache
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agent.Windows.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agent.Windows.AssemblyInfoInputs.cache
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agent.Windows.AssemblyInfo.cs
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agent.Windows.csproj.CoreCompileInputs.cache
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agent.Windows.sourcelink.json
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agen.7B148341.Up2Date
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agent.Windows.dll
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\refint\Twk.Agent.Windows.dll
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\Twk.Agent.Windows.pdb
+C:\Users\Miguel\.vscode\Antigravity\TweakLab\agent\src\Twk.Agent.Windows\obj\Release\net8.0-windows\ref\Twk.Agent.Windows.dll
