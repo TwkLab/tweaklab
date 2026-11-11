@@ -13,6 +13,8 @@ import {
   UserCheck,
   Sparkles,
   LogIn,
+  FileCode2,
+  Upload,
 } from "lucide-react";
 import { Ticket, TicketCategory, TicketPriority, UserProfile } from "@/types";
 import { initialTickets } from "@/data/mockTickets";
@@ -41,9 +43,52 @@ function NewTicketContent() {
   const [os, setOs] = useState("Windows 11 Pro 23H2 (64-bit)");
   const [storage, setStorage] = useState("");
 
+  // TWK Agent Evidence Import
+  const [evidenceDigest, setEvidenceDigest] = useState<string | null>(null);
+  const [evidenceRawJson, setEvidenceRawJson] = useState<string | null>(null);
+  const [agentImportSuccess, setAgentImportSuccess] = useState(false);
+
   const [consent, setConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasImportedProfile, setHasImportedProfile] = useState(false);
+
+  const handleImportEvidenceJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const envelope = JSON.parse(text);
+        if (!envelope || !envelope.payload) {
+          alert("O arquivo selecionado não contém um Envelope de Evidência TweakLab válido.");
+          return;
+        }
+
+        const payload = envelope.payload;
+        if (payload.cpu?.model) setCpu(payload.cpu.model);
+        if (payload.gpus?.[0]?.model) setGpu(payload.gpus[0].model);
+        if (payload.ram?.totalFormatted) {
+          const mod = payload.ram.modules?.[0];
+          setRam(`${payload.ram.totalFormatted} ${mod?.speed || ""} ${mod?.partNumber || ""}`.trim());
+        }
+        if (payload.operatingSystem?.caption) {
+          setOs(`${payload.operatingSystem.caption} (${payload.operatingSystem.osArchitecture || ""})`.trim());
+        }
+        if (payload.disks?.[0]?.model) {
+          setStorage(`${payload.disks[0].model} (${payload.disks[0].sizeFormatted || ""})`.trim());
+        }
+
+        setEvidenceDigest(envelope.consent?.payloadDigest || "sha256:importado");
+        setEvidenceRawJson(text);
+        setAgentImportSuccess(true);
+      } catch (err) {
+        alert("Falha ao ler o arquivo JSON do TWK Agent.");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   // Load client user session
   useEffect(() => {
@@ -130,6 +175,8 @@ function NewTicketContent() {
       },
       actions: [],
       benchmarks: [],
+      evidenceDigest: evidenceDigest || undefined,
+      evidenceRawJson: evidenceRawJson || undefined,
       messages: [
         {
           id: `msg-${Date.now()}`,
@@ -422,13 +469,41 @@ function NewTicketContent() {
               <span>3. Peças do Computador (Auto-Completar Ativo)</span>
             </label>
 
-            {hasImportedProfile && (
-              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" />
-                Peças carregadas do seu Perfil
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-twk-surface hover:bg-twk-card border border-twk-green/40 hover:border-twk-green text-[11px] font-mono text-twk-green transition-all shadow-twk-glow-sm">
+                <Upload className="w-3.5 h-3.5" />
+                <span>Importar Evidência do TWK Agent</span>
+                <input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={handleImportEvidenceJson}
+                />
+              </label>
+
+              {hasImportedProfile && !agentImportSuccess && (
+                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  Perfil Ativo
+                </span>
+              )}
+            </div>
           </div>
+
+          {agentImportSuccess && (
+            <div className="p-3.5 rounded-xl bg-twk-green/10 border border-twk-green/40 flex items-center justify-between gap-3 text-xs font-mono">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-twk-green flex-shrink-0" />
+                <div>
+                  <span className="text-twk-green font-bold">Evidência TWK Agent Vinculada:</span>{" "}
+                  <span className="text-twk-muted truncate block sm:inline">{evidenceDigest}</span>
+                </div>
+              </div>
+              <span className="text-[10px] uppercase font-bold text-twk-bg bg-twk-green px-2 py-0.5 rounded flex-shrink-0">
+                Auditável
+              </span>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">

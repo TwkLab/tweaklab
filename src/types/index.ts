@@ -102,6 +102,8 @@ export interface Ticket {
   benchmarks: BenchmarkMetric[];
   messages: TicketMessage[];
   consents: ConsentRecord[];
+  evidenceDigest?: string;
+  evidenceRawJson?: string;
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
