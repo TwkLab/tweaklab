@@ -19,6 +19,8 @@ import {
 import { Ticket, TicketCategory, TicketPriority, UserProfile } from "@/types";
 import { initialTickets } from "@/data/mockTickets";
 import HardwareAutocomplete from "@/components/HardwareAutocomplete";
+import ZeroInstallHardwareDetector from "@/components/ZeroInstallHardwareDetector";
+import { DetectedSpecs } from "@/utils/hardwareDetection";
 
 function NewTicketContent() {
   const router = useRouter();
@@ -51,6 +53,17 @@ function NewTicketContent() {
   const [consent, setConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasImportedProfile, setHasImportedProfile] = useState(false);
+
+  const handleSpecsDetected = (specs: DetectedSpecs) => {
+    if (specs.cpu) setCpu(specs.cpu);
+    if (specs.gpu) setGpu(specs.gpu);
+    if (specs.ram) setRam(specs.ram);
+    if (specs.os) setOs(specs.os);
+    if (specs.storage) setStorage(specs.storage);
+    if (specs.motherboard && !storage) {
+      setStorage(`Placa-mãe: ${specs.motherboard}`);
+    }
+  };
 
   const handleImportEvidenceJson = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -537,6 +550,9 @@ function NewTicketContent() {
               </span>
             </div>
           )}
+
+          {/* Zero Install Hardware Detector */}
+          <ZeroInstallHardwareDetector onSpecsDetected={handleSpecsDetected} />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">

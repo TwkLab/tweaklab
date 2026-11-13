@@ -14,6 +14,8 @@ import {
   Plus,
 } from "lucide-react";
 import HardwareAutocomplete from "@/components/HardwareAutocomplete";
+import ZeroInstallHardwareDetector from "@/components/ZeroInstallHardwareDetector";
+import { DetectedSpecs } from "@/utils/hardwareDetection";
 import { UserProfile, DeviceSpecs } from "@/types";
 
 export default function ProfilePage() {
@@ -30,6 +32,15 @@ export default function ProfilePage() {
   const [motherboard, setMotherboard] = useState("");
 
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const handleSpecsDetected = (specs: DetectedSpecs) => {
+    if (specs.cpu) setCpu(specs.cpu);
+    if (specs.gpu) setGpu(specs.gpu);
+    if (specs.ram) setRam(specs.ram);
+    if (specs.os) setOs(specs.os);
+    if (specs.storage) setStorage(specs.storage);
+    if (specs.motherboard) setMotherboard(specs.motherboard);
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem("twk_client_user");
@@ -185,6 +196,9 @@ export default function ProfilePage() {
               Auto-completar ativo
             </span>
           </div>
+
+          {/* Zero-Install Hardware Detector */}
+          <ZeroInstallHardwareDetector onSpecsDetected={handleSpecsDetected} />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
