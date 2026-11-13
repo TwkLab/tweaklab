@@ -170,6 +170,13 @@
                         <RadioButton x:Name="NavAccount" GroupName="Nav"
                                      Style="{StaticResource NavButton}" Content="Conta &amp; Sincronização"
                                      Checked="Nav_Checked" Tag="3" />
+
+                        <TextBlock Text="COMUNICAÇÃO" FontSize="9" FontWeight="Bold" FontFamily="{StaticResource MonoFont}"
+                                   Foreground="{StaticResource TwkDimBrush}" Margin="16,16,0,6" />
+
+                        <RadioButton x:Name="NavChat" GroupName="Nav"
+                                     Style="{StaticResource NavButton}" Content="Chat com Cliente"
+                                     Checked="Nav_Checked" Tag="4" />
                     </StackPanel>
 
                     <!-- Sidebar Footer -->
@@ -876,6 +883,307 @@
                                 </StackPanel>
                             </StackPanel>
                         </Border>
+                    </Grid>
+                </Grid>
+
+                <!-- ═══════════════════════════════════════════════
+                     PAGE 4: CHAT COM O CLIENTE & ATENDIMENTO REMOTO
+                ═══════════════════════════════════════════════ -->
+                <Grid x:Name="Page4" Grid.Row="0" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <!-- Top Header & Session Bar -->
+                        <RowDefinition Height="Auto" />
+                        <!-- Main Chat + Side Panel -->
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header & Session Control Bar -->
+                    <Border Grid.Row="0" Margin="0,0,0,14" Padding="14,12"
+                            Background="{StaticResource TwkSurfaceBrush}"
+                            BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Text="Chat com Cliente &amp; Atendimento Remoto" FontSize="18" FontWeight="Bold"
+                                               Foreground="{StaticResource TwkTextBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <Border Background="#1A00E676" BorderBrush="{StaticResource TwkGreenBrush}" BorderThickness="1"
+                                            CornerRadius="12" Padding="8,2" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="6" Height="6" Fill="{StaticResource TwkGreenBrush}" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="CANAL AO VIVO" FontSize="9.5" FontWeight="Bold"
+                                                       FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkGreenBrush}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="Conexão direta de texto com o cliente para instruções, confirmações e laudos em tempo real."
+                                           FontSize="11.5" Foreground="{StaticResource TwkTextSecondaryBrush}" />
+                            </StackPanel>
+
+                            <!-- Session Controls -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,12,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Chamado / Sessão:" FontSize="11" Foreground="{StaticResource TwkTextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <TextBox Text="{Binding ChatTicketCode, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource TwkTextBox}" Width="150" Height="30" FontSize="11.5"
+                                             FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center" Padding="8,4" />
+                                </StackPanel>
+
+                                <Button Command="{Binding RefreshChatCommand}" Style="{StaticResource TwkCompactButton}"
+                                        Content="Atualizar" ToolTip="Verificar novas mensagens no servidor" Margin="0,0,8,0" />
+                                <Button Command="{Binding CopyChatHistoryCommand}" Style="{StaticResource TwkCompactButton}"
+                                        Content="Copiar Histórico" ToolTip="Copiar conversa completa formatada para Área de Transferência" Margin="0,0,8,0" />
+                                <Button Command="{Binding ClearChatCommand}" Style="{StaticResource TwkCompactButton}"
+                                        Content="Limpar" ToolTip="Limpar visualização do chat" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Main Chat Area (Feed + Right Side Tools) -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <!-- Chat Column (Feed + Composer) -->
+                            <ColumnDefinition Width="*" />
+                            <!-- Quick Snippets & Technical Sharing Sidebar -->
+                            <ColumnDefinition Width="320" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT: Chat Feed & Composer -->
+                        <Grid Grid.Column="0" Margin="0,0,14,0">
+                            <Grid.RowDefinitions>
+                                <!-- Messages ScrollViewer -->
+                                <RowDefinition Height="*" />
+                                <!-- Composer Input -->
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Messages Card Container -->
+                            <Border Grid.Row="0" Background="{StaticResource TwkCardBrush}"
+                                    BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="10"
+                                    Margin="0,0,0,10" Padding="8">
+                                <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsControl ItemsSource="{Binding ChatMessages}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,4">
+                                                    <!-- 1. Technician Message (Right Aligned, Cyber Cyan Accent) -->
+                                                    <Border Visibility="{Binding IsFromTechnician, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                            HorizontalAlignment="Right" MaxWidth="580" CornerRadius="12,12,2,12"
+                                                            Background="#0E1925" BorderBrush="{StaticResource TwkCyanBrush}" BorderThickness="1"
+                                                            Padding="14,10" Margin="40,2,8,2">
+                                                        <StackPanel>
+                                                            <Grid Margin="0,0,0,5">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Border Background="#1A00D2FF" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                                                        <TextBlock Text="{Binding RoleBadge}" FontSize="9.5" FontWeight="Bold"
+                                                                                   FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkCyanBrush}" />
+                                                                    </Border>
+                                                                    <TextBlock Text="{Binding SenderName}" FontSize="11" FontWeight="SemiBold"
+                                                                               Foreground="{StaticResource TwkTextBrush}" VerticalAlignment="Center" />
+                                                                </StackPanel>
+                                                                <TextBlock Text="{Binding FormattedTime}" HorizontalAlignment="Right"
+                                                                           FontSize="10" FontFamily="{StaticResource MonoFont}"
+                                                                           Foreground="{StaticResource TwkTextDimBrush}" VerticalAlignment="Center" />
+                                                            </Grid>
+                                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="12.5" LineHeight="18"
+                                                                       Foreground="{StaticResource TwkTextBrush}" />
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <!-- 2. Client Message (Left Aligned, Modern Surface) -->
+                                                    <Border Visibility="{Binding IsFromClient, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                            HorizontalAlignment="Left" MaxWidth="580" CornerRadius="12,12,12,2"
+                                                            Background="{StaticResource TwkSurfaceBrush}" BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1"
+                                                            Padding="14,10" Margin="8,2,40,2">
+                                                        <StackPanel>
+                                                            <Grid Margin="0,0,0,5">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Border Background="#1A00E676" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                                                        <TextBlock Text="{Binding RoleBadge}" FontSize="9.5" FontWeight="Bold"
+                                                                                   FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkGreenBrush}" />
+                                                                    </Border>
+                                                                    <TextBlock Text="{Binding SenderName}" FontSize="11" FontWeight="SemiBold"
+                                                                               Foreground="{StaticResource TwkTextBrush}" VerticalAlignment="Center" />
+                                                                </StackPanel>
+                                                                <TextBlock Text="{Binding FormattedTime}" HorizontalAlignment="Right"
+                                                                           FontSize="10" FontFamily="{StaticResource MonoFont}"
+                                                                           Foreground="{StaticResource TwkTextDimBrush}" VerticalAlignment="Center" />
+                                                            </Grid>
+                                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="12.5" LineHeight="18"
+                                                                       Foreground="{StaticResource TwkTextBrush}" />
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <!-- 3. System Message (Center Aligned, Minimalist Mono) -->
+                                                    <Border Visibility="{Binding IsSystem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                            HorizontalAlignment="Center" MaxWidth="540" CornerRadius="8"
+                                                            Background="#0C1017" BorderBrush="{StaticResource TwkBorderSubtleBrush}" BorderThickness="1"
+                                                            Padding="12,6" Margin="16,4">
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                            <TextBlock Text="[SISTEMA]" FontSize="9" FontWeight="Bold" FontFamily="{StaticResource MonoFont}"
+                                                                       Foreground="{StaticResource TwkDimBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="11"
+                                                                       FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkTextSecondaryBrush}" VerticalAlignment="Center" />
+                                                            <TextBlock Text="{Binding FormattedTime, StringFormat=' ({0})'}" FontSize="10"
+                                                                       FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkTextDimBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- Composer Area -->
+                            <Border Grid.Row="1" Background="{StaticResource TwkSurfaceBrush}"
+                                    BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="10"
+                                    Padding="10">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Input Row -->
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBox x:Name="ChatInputBox" Grid.Column="0"
+                                                 Text="{Binding CurrentChatMessage, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource TwkTextBox}"
+                                                 AcceptsReturn="True" TextWrapping="Wrap"
+                                                 MinHeight="46" MaxHeight="90" VerticalScrollBarVisibility="Auto"
+                                                 Padding="10,8" Margin="0,0,10,0"
+                                                 KeyDown="ChatInputBox_KeyDown"
+                                                 ToolTip="Digite sua mensagem para o cliente..." />
+
+                                        <Button Grid.Column="1" Command="{Binding SendChatMessageCommand}"
+                                                Style="{StaticResource TwkPrimaryButton}" Width="120" Height="46"
+                                                VerticalAlignment="Stretch" ToolTip="Enviar mensagem (Enter)">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="➤" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                                <TextBlock Text="Enviar" FontWeight="Bold" FontSize="12.5" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Footer Hints -->
+                                    <Grid Grid.Row="1" Margin="2,6,2,0">
+                                        <TextBlock Text="{Binding ChatStatusMessage}" FontSize="10" FontFamily="{StaticResource MonoFont}"
+                                                   Foreground="{StaticResource TwkTextDimBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="Pressione Enter para enviar • Shift + Enter para quebrar linha"
+                                                   FontSize="10" Foreground="{StaticResource TwkTextDimBrush}"
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- RIGHT: Quick Snippets & Technical Sharing -->
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Card 1: Compartilhamento Técnico de 1 Clique -->
+                            <Border Grid.Row="0" Margin="0,0,0,12" Padding="14"
+                                    Background="{StaticResource TwkSurfaceBrush}"
+                                    BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="10">
+                                <StackPanel>
+                                    <TextBlock Text="COMPARTILHAR NO CHAT" FontSize="10" FontWeight="Bold"
+                                               FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,10" />
+
+                                    <Button Command="{Binding SendSpecsToChatCommand}" Style="{StaticResource TwkSecondaryButton}"
+                                            Margin="0,0,0,8" HorizontalContentAlignment="Left" Padding="12,8">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🖥️" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="Enviar Laudo do PC" FontWeight="Bold" FontSize="11.5" Foreground="{StaticResource TwkTextBrush}" />
+                                                <TextBlock Text="CPU, GPU, RAM, MB e SO" FontSize="9.5" Foreground="{StaticResource TwkTextSecondaryBrush}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <Button Command="{Binding SendSha256ToChatCommand}" Style="{StaticResource TwkSecondaryButton}"
+                                            HorizontalContentAlignment="Left" Padding="12,8">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🛡️" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="Enviar Selo SHA-256" FontWeight="Bold" FontSize="11.5" Foreground="{StaticResource TwkTextBrush}" />
+                                                <TextBlock Text="Certificado de auditoria imutável" FontSize="9.5" Foreground="{StaticResource TwkTextSecondaryBrush}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Card 2: Snippets Rápidos de Atendimento -->
+                            <Border Grid.Row="1" Margin="0,0,0,12" Padding="14"
+                                    Background="{StaticResource TwkSurfaceBrush}"
+                                    BorderBrush="{StaticResource TwkBorderBrush}" BorderThickness="1" CornerRadius="10">
+                                <StackPanel>
+                                    <TextBlock Text="SNIPPETS RÁPIDOS" FontSize="10" FontWeight="Bold"
+                                               FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,10" />
+
+                                    <Button Command="{Binding SendQuickSnippetCommand}" CommandParameter="Olá! Estou iniciando a análise do seu computador via TweakLab Agent."
+                                            Style="{StaticResource TwkCompactButton}" Content="💬 Saudação &amp; Início"
+                                            HorizontalAlignment="Stretch" Margin="0,0,0,6" HorizontalContentAlignment="Left" />
+
+                                    <Button Command="{Binding SendQuickSnippetCommand}" CommandParameter="Diagnóstico de hardware concluído. Iniciando agora os testes de estabilidade e sensores."
+                                            Style="{StaticResource TwkCompactButton}" Content="🧪 Testes de Estresse"
+                                            HorizontalAlignment="Stretch" Margin="0,0,0,6" HorizontalContentAlignment="Left" />
+
+                                    <Button Command="{Binding SendQuickSnippetCommand}" CommandParameter="Otimizações de sistema e calibração de latência aplicadas com sucesso! Pode verificar o resultado."
+                                            Style="{StaticResource TwkCompactButton}" Content="⚡ Otimização Aplicada"
+                                            HorizontalAlignment="Stretch" Margin="0,0,0,6" HorizontalContentAlignment="Left" />
+
+                                    <Button Command="{Binding SendQuickSnippetCommand}" CommandParameter="Será necessário reiniciar o computador para que todas as configurações do Windows e drivers entrem em vigor."
+                                            Style="{StaticResource TwkCompactButton}" Content="🔄 Pedir Reinicialização"
+                                            HorizontalAlignment="Stretch" Margin="0,0,0,6" HorizontalContentAlignment="Left" />
+
+                                    <Button Command="{Binding SendQuickSnippetCommand}" CommandParameter="Atendimento concluído com êxito! Qualquer dúvida adicional, permanecemos à disposição."
+                                            Style="{StaticResource TwkCompactButton}" Content="✅ Finalizar Atendimento"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Card 3: Status da Conexão & Cliente -->
+                            <Border Grid.Row="2" Padding="14"
+                                    Background="{StaticResource TwkCardBrush}"
+                                    BorderBrush="{StaticResource TwkBorderSubtleBrush}" BorderThickness="1" CornerRadius="10">
+                                <StackPanel>
+                                    <TextBlock Text="INFORMAÇÕES DA SESSÃO" FontSize="10" FontWeight="Bold"
+                                               FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkDimBrush}" Margin="0,0,0,10" />
+
+                                    <TextBlock Text="Técnico Ativo:" FontSize="10.5" Foreground="{StaticResource TwkTextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding UserName, TargetNullValue='Técnico TWK'}" FontWeight="Bold" FontSize="12"
+                                               Foreground="{StaticResource TwkTextBrush}" Margin="0,2,0,8" />
+
+                                    <TextBlock Text="E-mail Vinculado:" FontSize="10.5" Foreground="{StaticResource TwkTextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding UserEmail, TargetNullValue='Não autenticado'}" FontSize="11"
+                                               FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TwkGreenBrush}"
+                                               TextTrimming="CharacterEllipsis" Margin="0,2,0,8" />
+
+                                    <TextBlock Text="Uptime do Sistema:" FontSize="10.5" Foreground="{StaticResource TwkTextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding UptimeFormatted}" FontSize="11" FontFamily="{StaticResource MonoFont}"
+                                               Foreground="{StaticResource TwkTextBrush}" Margin="0,2,0,12" />
+
+                                    <Button Command="{Binding OpenPortalCommand}" Style="{StaticResource TwkSecondaryButton}"
+                                            Content="Abrir Chamado no Site" HorizontalAlignment="Stretch" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Grid>
                 </Grid>
 

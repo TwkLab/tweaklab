@@ -57,6 +57,62 @@ export default function TicketDetailPage() {
     setLoading(false);
   }, [ticketId]);
 
+  // Synchronize remote chat messages from Technician (Agent App)
+  useEffect(() => {
+    if (!ticket) return;
+
+    const pollChat = async () => {
+      try {
+        const query = ticket.code || ticket.id;
+        const res = await fetch(`/api/chat?ticketId=${encodeURIComponent(query)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.messages && data.messages.length > 0) {
+            setTicket((prev) => {
+              if (!prev) return prev;
+              const existingIds = new Set(prev.messages.map((m) => m.id));
+              const newIncoming: TicketMessage[] = data.messages
+                .filter((m: any) => !existingIds.has(m.id))
+                .map((m: any) => ({
+                  id: m.id,
+                  ticketId: prev.id,
+                  senderName: m.senderName,
+                  senderRole: m.senderRole,
+                  content: m.content,
+                  sentAt: m.sentAt,
+                }));
+
+              if (newIncoming.length > 0) {
+                const updated = {
+                  ...prev,
+                  messages: [...prev.messages, ...newIncoming],
+                };
+                // Keep local storage up to date
+                const stored = localStorage.getItem("twk_tickets");
+                if (stored) {
+                  try {
+                    const list: Ticket[] = JSON.parse(stored);
+                    const idx = list.findIndex((t) => t.id === prev.id);
+                    if (idx !== -1) {
+                      list[idx] = updated;
+                      localStorage.setItem("twk_tickets", JSON.stringify(list));
+                    }
+                  } catch {}
+                }
+                return updated;
+              }
+              return prev;
+            });
+          }
+        }
+      } catch {}
+    };
+
+    pollChat();
+    const timer = setInterval(pollChat, 4000);
+    return () => clearInterval(timer);
+  }, [ticket?.id, ticket?.code]);
+
   if (loading) {
     return (
       <div className="py-20 text-center font-mono text-xs text-twk-muted">
@@ -93,9 +149,9 @@ export default function TicketDetailPage() {
     );
   }
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !ticket) return;
 
     const newMsgObj: TicketMessage = {
       id: `msg-${Date.now()}`,
@@ -127,6 +183,22 @@ export default function TicketDetailPage() {
         }
       } catch {}
     }
+
+    // Push to cloud /api/chat so technician receives it in the agent app
+    try {
+      await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticketId: ticket.code || ticket.id,
+          email: ticket.customerEmail,
+          senderName: newMsgObj.senderName,
+          senderRole: "cliente",
+          content: newMsgObj.content,
+          sentAt: newMsgObj.sentAt,
+        }),
+      });
+    } catch {}
   };
 
   // Pipeline step calculation

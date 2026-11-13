@@ -27,11 +27,21 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly IEvidenceSerializer _serializer;
     private readonly WindowsLiveTelemetryService _telemetryService;
     private readonly CloudSyncService _cloudSyncService;
+    private readonly ChatService _chatService;
     private readonly DispatcherTimer _telemetryTimer;
+    private readonly DispatcherTimer _chatTimer;
     private CancellationTokenSource? _cts;
 
     // View Navigation
-    private int _selectedTabIndex = 0; // 0 = Telemetria, 1 = Triagem, 2 = Ferramentas, 3 = Conta
+    private int _selectedTabIndex = 0; // 0 = Telemetria, 1 = Triagem, 2 = Ferramentas, 3 = Conta, 4 = Chat
+
+    // Chat State
+    private string _currentChatMessage = "";
+    private string _chatTicketCode = "TWK-2026-084";
+    private string _chatCustomerName = "Cliente";
+    private bool _isChatSending;
+    private string _chatStatusMessage = "Canal de atendimento pronto.";
+    public Action? OnMessageAdded;
 
     // State
     private bool _isCollecting;
@@ -70,6 +80,7 @@ public class MainViewModel : INotifyPropertyChanged
         _serializer = serializer;
         _telemetryService = new WindowsLiveTelemetryService();
         _cloudSyncService = new CloudSyncService();
+        _chatService = new ChatService();
 
         // 1. Load tools and detect installed executables
         var baseTools = TechnicianToolCatalog.GetTools();
@@ -105,6 +116,15 @@ public class MainViewModel : INotifyPropertyChanged
         OpenToolSiteCommand = new RelayCommand(url => OpenExternalUrl(url?.ToString()));
         OpenPortalCommand = new RelayCommand(_ => OpenExternalUrl("https://tweaklab-lac.vercel.app/portal"));
 
+        // Chat Commands
+        SendChatMessageCommand = new RelayCommand(async _ => await SendChatMessageAsync(), _ => !string.IsNullOrWhiteSpace(CurrentChatMessage) && !IsChatSending);
+        SendQuickSnippetCommand = new RelayCommand(async s => await SendQuickSnippetAsync(s as string), _ => !IsChatSending);
+        SendSpecsToChatCommand = new RelayCommand(async _ => await SendSpecsToChatAsync(), _ => !IsChatSending);
+        SendSha256ToChatCommand = new RelayCommand(async _ => await SendSha256ToChatAsync(), _ => !IsChatSending);
+        ClearChatCommand = new RelayCommand(_ => ClearChat());
+        CopyChatHistoryCommand = new RelayCommand(_ => CopyChatHistory());
+        RefreshChatCommand = new RelayCommand(async _ => await PollChatTickAsync());
+
         // 4. Restore local session
         LoadSavedUser();
 
@@ -116,9 +136,76 @@ public class MainViewModel : INotifyPropertyChanged
         _telemetryTimer.Tick += async (s, e) => await UpdateTelemetryTickAsync();
         _telemetryTimer.Start();
 
-        // Prime first snapshot immediately
+        // 6. Setup Live Chat Poll Timer (every 4s)
+        _chatTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(4)
+        };
+        _chatTimer.Tick += async (s, e) => await PollChatTickAsync();
+        _chatTimer.Start();
+
+        // Prime first snapshot and chat immediately
         _ = UpdateTelemetryTickAsync();
+        _ = ReloadChatForTicketAsync();
     }
+
+    public ObservableCollection<AgentChatMessage> ChatMessages { get; } = new();
+
+    public string CurrentChatMessage
+    {
+        get => _currentChatMessage;
+        set
+        {
+            if (SetField(ref _currentChatMessage, value))
+            {
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    public string ChatTicketCode
+    {
+        get => _chatTicketCode;
+        set
+        {
+            if (SetField(ref _chatTicketCode, value))
+            {
+                _ = ReloadChatForTicketAsync();
+            }
+        }
+    }
+
+    public string ChatCustomerName
+    {
+        get => _chatCustomerName;
+        set => SetField(ref _chatCustomerName, value);
+    }
+
+    public bool IsChatSending
+    {
+        get => _isChatSending;
+        private set
+        {
+            if (SetField(ref _isChatSending, value))
+            {
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    public string ChatStatusMessage
+    {
+        get => _chatStatusMessage;
+        private set => SetField(ref _chatStatusMessage, value);
+    }
+
+    public ICommand SendChatMessageCommand { get; }
+    public ICommand SendQuickSnippetCommand { get; }
+    public ICommand SendSpecsToChatCommand { get; }
+    public ICommand SendSha256ToChatCommand { get; }
+    public ICommand ClearChatCommand { get; }
+    public ICommand CopyChatHistoryCommand { get; }
+    public ICommand RefreshChatCommand { get; }
 
     public ObservableCollection<TechnicianTool> FilteredTools { get; }
     public ObservableCollection<string> Categories { get; }
@@ -678,12 +765,214 @@ public class MainViewModel : INotifyPropertyChanged
                     {
                         IsLoggedIn = true;
                         SyncStatusMessage = $"Conectado com {UserEmail}";
+                        if (lines.Length >= 3 && !string.IsNullOrWhiteSpace(lines[2]))
+                        {
+                            ChatTicketCode = lines[2].Trim();
+                        }
+                        else
+                        {
+                            ChatTicketCode = UserEmail.Contains("@") ? UserEmail.Split('@')[0].ToUpperInvariant() : "TWK-2026-084";
+                        }
                     }
                 }
             }
         }
         catch {}
     }
+
+    #region Chat Methods
+
+    public async Task SendSpecsToChatAsync()
+    {
+        if (Inventory == null)
+        {
+            await SendChatMessageAsync("⚠️ Nenhum hardware coletado ainda. Clique em 'Iniciar Diagnóstico' na aba 'Diagnóstico do PC' para auditar esta máquina.");
+            return;
+        }
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("🖥️ LAUDO DE HARDWARE & ESPECIFICAÇÕES DO PC");
+        sb.AppendLine($"• Processador (CPU): {Inventory.Cpu.Model} ({Inventory.Cpu.PhysicalCores} Cores / {Inventory.Cpu.LogicalProcessors} Threads • {Inventory.Cpu.Architecture})");
+
+        var ramTitle = !string.IsNullOrEmpty(Inventory.Ram.CommercialSummary)
+            ? Inventory.Ram.CommercialSummary
+            : Inventory.Ram.TotalFormatted;
+        sb.AppendLine($"• Memória RAM: {ramTitle}");
+        foreach (var m in Inventory.Ram.Modules)
+        {
+            var mModel = !string.IsNullOrEmpty(m.CommercialModel) ? m.CommercialModel : m.Manufacturer;
+            sb.AppendLine($"    - {m.BankLabel}: {mModel} ({m.CapacityFormatted} @ {m.Speed})");
+        }
+
+        if (Inventory.Gpus.Count > 0)
+        {
+            sb.AppendLine($"• Placa de Vídeo (GPU): {Inventory.Gpus[0].Model} ({Inventory.Gpus[0].DedicatedVramFormatted}, Driver {Inventory.Gpus[0].DriverVersion})");
+        }
+
+        sb.AppendLine($"• Placa-Mãe: {Inventory.Motherboard.Manufacturer} {Inventory.Motherboard.Model} (BIOS {Inventory.Motherboard.BiosVersion})");
+        sb.AppendLine($"• Sistema: {Inventory.OperatingSystem.Caption} (Build {Inventory.OperatingSystem.BuildNumber})");
+        if (!string.IsNullOrEmpty(EvidenceDigest))
+        {
+            sb.AppendLine($"• Selo SHA-256: {EvidenceDigest}");
+        }
+        sb.Append("✓ Hardware auditado e verificado via TweakLab Agent.");
+
+        await SendChatMessageAsync(sb.ToString());
+    }
+
+    public async Task SendSha256ToChatAsync()
+    {
+        if (string.IsNullOrEmpty(EvidenceDigest))
+        {
+            await SendChatMessageAsync("⚠️ Selo de integridade não disponível. Realize a auditoria na aba 'Diagnóstico do PC' primeiro.");
+            return;
+        }
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("🛡️ SELO DE INTEGRIDADE & AUDITORIA TWEAKLAB (SHA-256)");
+        sb.AppendLine($"• Hash Criptográfico: {EvidenceDigest}");
+        sb.AppendLine("• Status: Laudo técnico assinado e protegido contra adulterações.");
+        sb.Append("• Validação: O cliente pode conferir este selo no portal web TweakLab.");
+
+        await SendChatMessageAsync(sb.ToString());
+    }
+
+    public async Task SendQuickSnippetAsync(string? snippet)
+    {
+        if (string.IsNullOrWhiteSpace(snippet)) return;
+        await SendChatMessageAsync(snippet);
+    }
+
+    public async Task SendChatMessageAsync(string? explicitContent = null)
+    {
+        var text = explicitContent ?? CurrentChatMessage;
+        if (string.IsNullOrWhiteSpace(text)) return;
+
+        IsChatSending = true;
+        try
+        {
+            var senderName = !string.IsNullOrWhiteSpace(UserName) ? UserName : "Técnico TWK";
+            var (success, msg, err) = await _chatService.SendMessageAsync(
+                ChatTicketCode,
+                senderName,
+                "tecnico",
+                text,
+                UserEmail);
+
+            if (success)
+            {
+                if (explicitContent == null)
+                {
+                    CurrentChatMessage = "";
+                }
+
+                if (!ChatMessages.Any(m => m.Id == msg.Id))
+                {
+                    ChatMessages.Add(msg);
+                }
+                ChatStatusMessage = $"Mensagem enviada às {DateTime.Now:HH:mm:ss}";
+                OnMessageAdded?.Invoke();
+            }
+            else
+            {
+                ChatStatusMessage = $"Erro no envio: {err}";
+            }
+        }
+        catch (Exception ex)
+        {
+            ChatStatusMessage = $"Falha no envio: {ex.Message}";
+        }
+        finally
+        {
+            IsChatSending = false;
+        }
+    }
+
+    public async Task ReloadChatForTicketAsync()
+    {
+        try
+        {
+            ChatStatusMessage = "Carregando histórico do chat...";
+            var list = await _chatService.LoadMessagesAsync(ChatTicketCode, UserEmail);
+
+            ChatMessages.Clear();
+            foreach (var m in list)
+            {
+                ChatMessages.Add(m);
+            }
+
+            ChatStatusMessage = $"{ChatMessages.Count} mensagens sincronizadas.";
+            OnMessageAdded?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            ChatStatusMessage = $"Erro ao carregar chat: {ex.Message}";
+        }
+    }
+
+    public async Task PollChatTickAsync()
+    {
+        try
+        {
+            var remote = await _chatService.FetchRemoteMessagesAsync(ChatTicketCode, UserEmail);
+            if (remote != null && remote.Count > 0)
+            {
+                bool hasNew = false;
+                foreach (var r in remote)
+                {
+                    if (!ChatMessages.Any(m => m.Id == r.Id || (m.SenderRole == r.SenderRole && m.Content == r.Content && Math.Abs((m.SentAt - r.SentAt).TotalSeconds) < 3)))
+                    {
+                        ChatMessages.Add(r);
+                        hasNew = true;
+                    }
+                }
+                if (hasNew)
+                {
+                    ChatStatusMessage = $"Novas mensagens recebidas ({DateTime.Now:HH:mm:ss})";
+                    OnMessageAdded?.Invoke();
+                }
+            }
+        }
+        catch {}
+    }
+
+    public void CopyChatHistory()
+    {
+        if (ChatMessages.Count == 0) return;
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("=== HISTÓRICO DE ATENDIMENTO TWEAKLAB ===");
+        sb.AppendLine($"Chamado / Sessão: {ChatTicketCode} | Exportado em: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+        sb.AppendLine("---------------------------------------------------");
+        foreach (var msg in ChatMessages)
+        {
+            var roleTag = msg.IsSystem ? "[SISTEMA]" : (msg.IsFromTechnician ? "[TÉCNICO]" : "[CLIENTE]");
+            sb.AppendLine($"[{msg.FormattedTime}] {roleTag} {msg.SenderName}:");
+            sb.AppendLine($"  {msg.Content}");
+            sb.AppendLine();
+        }
+        sb.AppendLine("---------------------------------------------------");
+
+        Clipboard.SetText(sb.ToString());
+        ChatStatusMessage = "Histórico copiado para a Área de Transferência!";
+    }
+
+    public void ClearChat()
+    {
+        var res = MessageBox.Show(
+            "Deseja realmente limpar a visualização deste chat localmente?",
+            "Limpar Chat TweakLab",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (res == MessageBoxResult.Yes)
+        {
+            ChatMessages.Clear();
+            ChatStatusMessage = "Histórico do chat limpo.";
+        }
+    }
+
+    #endregion
 
     private static string GetUserDataFilePath()
     {

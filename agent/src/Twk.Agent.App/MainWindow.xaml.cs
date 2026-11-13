@@ -20,10 +20,35 @@ public partial class MainWindow : Window
 
             var collector = new WindowsHardwareCollector();
             var serializer = new EvidenceSerializer();
-            DataContext = new MainViewModel(collector, serializer);
+            var vm = new MainViewModel(collector, serializer);
+            DataContext = vm;
             App.LogInfo("MainWindow DataContext initialized successfully");
 
-            _pages = new[] { Page0, Page1, Page2, Page3 };
+            _pages = new[] { Page0, Page1, Page2, Page3, Page4 };
+
+            vm.OnMessageAdded = () =>
+            {
+                Dispatcher.InvokeAsync(() =>
+                {
+                    try
+                    {
+                        ChatScrollViewer?.ScrollToEnd();
+                    }
+                    catch {}
+                });
+            };
+
+            vm.ChatMessages.CollectionChanged += (s, e) =>
+            {
+                Dispatcher.InvokeAsync(() =>
+                {
+                    try
+                    {
+                        ChatScrollViewer?.ScrollToEnd();
+                    }
+                    catch {}
+                });
+            };
 
             Loaded += (s, e) => App.LogInfo("MainWindow Loaded event fired");
             Closing += (s, e) => App.LogInfo($"MainWindow.Closing fired. Cancel={e.Cancel}\n{Environment.StackTrace}");
@@ -69,5 +94,24 @@ public partial class MainWindow : Window
     private void BtnClose_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void ChatInputBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            if (System.Windows.Input.Keyboard.Modifiers.HasFlag(System.Windows.Input.ModifierKeys.Shift))
+            {
+                // Shift+Enter inserts a new line
+                return;
+            }
+
+            // Enter alone submits the message
+            e.Handled = true;
+            if (DataContext is MainViewModel vm && vm.SendChatMessageCommand.CanExecute(null))
+            {
+                vm.SendChatMessageCommand.Execute(null);
+            }
+        }
     }
 }
