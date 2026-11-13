@@ -50,6 +50,7 @@
     <SolidColorBrush x:Key="TwkTextBrush" Color="{StaticResource TwkTextColor}" />
     <SolidColorBrush x:Key="TwkTextSecondaryBrush" Color="{StaticResource TwkTextSecondaryColor}" />
     <SolidColorBrush x:Key="TwkDimBrush" Color="{StaticResource TwkTextDimColor}" />
+    <SolidColorBrush x:Key="TwkTextDimBrush" Color="{StaticResource TwkTextDimColor}" />
     <SolidColorBrush x:Key="TwkMutedBrush" Color="{StaticResource TwkTextSecondaryColor}" />
 
     <!-- Converters -->
