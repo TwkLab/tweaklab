@@ -17,8 +17,122 @@ export interface DetectedSpecs {
 }
 
 /**
+ * Resolves technical memory part numbers into their commercial marketing names
+ * e.g.: "AX4U32008G16A-BT41" -> "ADATA XPG Spectrix D41 RGB"
+ * e.g.: "KF432C16BB/8" -> "Kingston FURY Beast"
+ */
+export function resolveRamCommercialName(partNumber: string, speed?: string, capacity?: string): string {
+  const p = partNumber.toUpperCase().trim();
+
+  let brandModel = "";
+
+  // ADATA XPG
+  if (p.includes("BT41") || p.includes("DR41") || p.includes("D41")) {
+    brandModel = "ADATA XPG Spectrix D41 RGB";
+  } else if (p.includes("D60G") || p.includes("D60")) {
+    brandModel = "ADATA XPG Spectrix D60G RGB";
+  } else if (p.includes("D50")) {
+    brandModel = "ADATA XPG Spectrix D50";
+  } else if (p.startsWith("AX4U") || p.startsWith("AX4")) {
+    brandModel = "ADATA XPG Spectrix / Gammix DDR4";
+  } else if (p.startsWith("AX5U") || p.startsWith("AX5")) {
+    brandModel = "ADATA XPG Lancer / Caster DDR5";
+  }
+  // Kingston / HyperX
+  else if (p.startsWith("KF4") || p.startsWith("KF5") || p.includes("FURY")) {
+    brandModel = "Kingston FURY Beast";
+  } else if (p.startsWith("HX4") || p.includes("HYPERX")) {
+    brandModel = "Kingston HyperX Fury";
+  }
+  // Corsair
+  else if (p.startsWith("CMW")) {
+    brandModel = "Corsair Vengeance RGB PRO";
+  } else if (p.startsWith("CMH")) {
+    brandModel = "Corsair Vengeance RGB RT/RS";
+  } else if (p.startsWith("CMK")) {
+    brandModel = "Corsair Vengeance LPX";
+  }
+  // G.Skill
+  else if (p.includes("TZ5") || p.includes("TRIDENT")) {
+    brandModel = "G.Skill Trident Z";
+  } else if (p.startsWith("F4-") || p.startsWith("F5-")) {
+    brandModel = "G.Skill Ripjaws / Trident";
+  }
+  // Crucial / Ballistix
+  else if (p.startsWith("BL") && (p.includes("8G") || p.includes("16G") || p.includes("32G"))) {
+    brandModel = "Crucial Ballistix";
+  } else if (p.startsWith("CT")) {
+    brandModel = "Crucial Basics";
+  }
+  // TeamGroup
+  else if (p.startsWith("TLZ") || p.startsWith("TF3") || p.startsWith("TF4")) {
+    brandModel = "TeamGroup T-Force";
+  }
+  // Asgard
+  else if (p.includes("VMA") || p.includes("VALKYRIE") || p.includes("FREYR") || p.includes("LOKI")) {
+    brandModel = "Asgard Gaming Memory";
+  }
+
+  const parts = [];
+  if (capacity) parts.push(capacity);
+  if (speed) parts.push(speed);
+  if (brandModel) {
+    parts.push(brandModel);
+  }
+  if (p && !brandModel) {
+    parts.push(p);
+  } else if (brandModel && p) {
+    parts.push(`(${p})`);
+  }
+
+  return parts.join(" ");
+}
+
+/**
+ * Cleans CPU name string by removing redundant text like "(R)", "(TM)", "with Radeon Graphics", "8-Core Processor"
+ */
+export function cleanCpuName(raw: string): string {
+  let name = raw
+    .replace(/\(R\)/gi, "")
+    .replace(/\(TM\)/gi, "")
+    .replace(/with Radeon Graphics/gi, "")
+    .replace(/\d+-Core Processor/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // If there's a comma (e.g. from DxDiag: "AMD Ryzen 7 5700X, ~3.4GHz"), strip clock
+  const commaIdx = name.indexOf(",");
+  if (commaIdx !== -1) {
+    name = name.substring(0, commaIdx).trim();
+  }
+
+  return name;
+}
+
+/**
+ * Cleans GPU name string by removing ANGLE wrappers, driver strings, etc.
+ */
+export function cleanGpuName(raw: string): string {
+  let gpu = raw.trim();
+
+  // Handle ANGLE format: ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 Direct3D11 vs_5_0 ps_5_0, ...)
+  const angleMatch = gpu.match(/ANGLE\s*\([^,]+,\s*([^,]+?)(?:\s+Direct3D|\s*\))/i);
+  if (angleMatch && angleMatch[1]) {
+    gpu = angleMatch[1].trim();
+  }
+
+  gpu = gpu
+    .replace(/\s+Direct3D.*$/i, "")
+    .replace(/\s+vs_\d+_\d+.*$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return gpu;
+}
+
+/**
  * Detects hardware available natively via browser Web APIs (WebGL, Navigator, Screen).
- * Completely zero-click, runs inside any modern browser (Chrome, Edge, Firefox, Brave, Opera).
+ * Note: Browsers intentionally sandbox CPU and RAM model names for privacy/security.
  */
 export function detectBrowserSpecs(): DetectedSpecs {
   const result: DetectedSpecs = {
@@ -31,36 +145,30 @@ export function detectBrowserSpecs(): DetectedSpecs {
   try {
     const canvas = document.createElement("canvas");
     const gl =
+      canvas.getContext("webgl", { powerPreference: "high-performance" }) ||
       canvas.getContext("webgl") ||
       (canvas.getContext("experimental-webgl") as WebGLRenderingContext | null);
 
     if (gl) {
       const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
       if (debugInfo) {
-        let renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-        if (typeof renderer === "string" && renderer.trim()) {
-          // Clean common ANGLE wrappers:
-          // e.g.: "ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Direct3D11 vs_5_0 ps_5_0, D3D11-31.0.15.5123)"
-          // e.g.: "ANGLE (AMD, AMD Radeon RX 7800 XT Direct3D11 vs_5_0 ps_5_0, D3D11-...)"
-          const angleMatch = renderer.match(/ANGLE\s*\([^,]+,\s*([^,]+?)(?:\s+Direct3D|\s*\))/i);
-          if (angleMatch && angleMatch[1]) {
-            renderer = angleMatch[1].trim();
-          }
-          result.gpu = renderer;
+        const rawRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        if (typeof rawRenderer === "string" && rawRenderer.trim()) {
+          result.gpu = cleanGpuName(rawRenderer);
         }
       }
     }
   } catch {}
 
-  // 2. CPU Threads (logical cores)
+  // 2. CPU Threads (Logical Cores)
   if (typeof navigator !== "undefined" && navigator.hardwareConcurrency) {
-    result.cpu = `${navigator.hardwareConcurrency} Cores / Threads Lógicas`;
+    result.cpu = `${navigator.hardwareConcurrency} Núcleos Lógicos (Detectado pelo Navegador - use DxDiag ou PowerShell para nome exato)`;
   }
 
   // 3. RAM estimate
   const navAny = typeof navigator !== "undefined" ? (navigator as any) : null;
   if (navAny && navAny.deviceMemory) {
-    result.ram = `${navAny.deviceMemory} GB+ RAM (Aprox. Navegador)`;
+    result.ram = `${navAny.deviceMemory} GB+ RAM (Navegador)`;
   }
 
   // 4. Operating System from User Agent
@@ -103,13 +211,13 @@ export function parseDxDiag(content: string): DetectedSpecs {
   // Processor
   const cpuMatch = content.match(/Processor:\s*([^\r\n]+)/i);
   if (cpuMatch) {
-    result.cpu = cpuMatch[1].trim();
+    result.cpu = cleanCpuName(cpuMatch[1].trim());
   }
 
   // Card name (GPU)
   const gpuMatch = content.match(/Card name:\s*([^\r\n]+)/i);
   if (gpuMatch) {
-    result.gpu = gpuMatch[1].trim();
+    result.gpu = cleanGpuName(gpuMatch[1].trim());
   }
 
   // Dedicated Video Memory (VRAM)
@@ -125,7 +233,7 @@ export function parseDxDiag(content: string): DetectedSpecs {
     const mbMatch = rawRam.match(/(\d+)\s*MB\s*RAM/i);
     if (mbMatch) {
       const gb = Math.round(parseInt(mbMatch[1], 10) / 1024);
-      result.ram = `${gb} GB RAM (${rawRam})`;
+      result.ram = `${gb} GB RAM`;
     } else {
       result.ram = rawRam;
     }
@@ -164,7 +272,7 @@ export function parseDxDiag(content: string): DetectedSpecs {
 /**
  * Parses output from PowerShell one-liner.
  * Users can run this single command in terminal without installing anything:
- * powershell -Command "Get-CimInstance Win32_Processor | % { 'CPU: ' + $_.Name }; Get-CimInstance Win32_VideoController | % { 'GPU: ' + $_.Name }; Get-CimInstance Win32_PhysicalMemory | % { 'RAM: ' + [math]::round($_.Capacity/1GB) + 'GB ' + $_.Speed + 'MHz ' + $_.PartNumber }; Get-CimInstance Win32_DiskDrive | % { 'DISK: ' + $_.Model + ' (' + [math]::round($_.Size/1GB) + 'GB)' }; Get-CimInstance Win32_BaseBoard | % { 'BOARD: ' + $_.Manufacturer + ' ' + $_.Product }"
+ * powershell -Command "$c=(Get-CimInstance Win32_Processor).Name; $g=(Get-CimInstance Win32_VideoController | Select -Expand Name -First 1); $r=(Get-CimInstance Win32_PhysicalMemory | ForEach { \"$([math]::Round($_.Capacity/1GB))GB $($_.Speed)MHz $($_.PartNumber.Trim())\" }) -join ' + '; $d=(Get-CimInstance Win32_DiskDrive | Select -Expand Model) -join ', '; $b=(Get-CimInstance Win32_BaseBoard | ForEach { $_.Manufacturer + ' ' + $_.Product }).Trim(); Set-Clipboard -Value \"CPU: $c`nGPU: $g`nRAM: $r`nDISK: $d`nBOARD: $b\""
  */
 export function parsePowerShellSpecs(output: string): DetectedSpecs {
   const result: DetectedSpecs = {
@@ -172,7 +280,7 @@ export function parsePowerShellSpecs(output: string): DetectedSpecs {
   };
 
   const lines = output.split(/[\r\n]+/);
-  const ramModules: string[] = [];
+  const rawRamEntries: string[] = [];
   const diskDrives: string[] = [];
 
   for (const rawLine of lines) {
@@ -180,15 +288,19 @@ export function parsePowerShellSpecs(output: string): DetectedSpecs {
     if (!line) continue;
 
     if (line.toUpperCase().startsWith("CPU:")) {
-      result.cpu = line.substring(4).trim();
+      result.cpu = cleanCpuName(line.substring(4).trim());
     } else if (line.toUpperCase().startsWith("GPU:")) {
-      // If multiple GPUs, prefer dedicated (NVIDIA/AMD)
-      const currentGpu = line.substring(4).trim();
-      if (!result.gpu || currentGpu.toLowerCase().includes("nvidia") || currentGpu.toLowerCase().includes("radeon")) {
+      const currentGpu = cleanGpuName(line.substring(4).trim());
+      if (!result.gpu || currentGpu.toLowerCase().includes("nvidia") || currentGpu.toLowerCase().includes("radeon") || currentGpu.toLowerCase().includes("geforce") || currentGpu.toLowerCase().includes("rtx")) {
         result.gpu = currentGpu;
       }
     } else if (line.toUpperCase().startsWith("RAM:")) {
-      ramModules.push(line.substring(4).trim());
+      const ramContent = line.substring(4).trim();
+      // Can be split by +
+      const modules = ramContent.split("+");
+      for (const m of modules) {
+        if (m.trim()) rawRamEntries.push(m.trim());
+      }
     } else if (line.toUpperCase().startsWith("DISK:")) {
       diskDrives.push(line.substring(5).trim());
     } else if (line.toUpperCase().startsWith("BOARD:")) {
@@ -198,8 +310,35 @@ export function parsePowerShellSpecs(output: string): DetectedSpecs {
     }
   }
 
-  if (ramModules.length > 0) {
-    result.ram = ramModules.join(" + ");
+  // Resolve RAM models
+  if (rawRamEntries.length > 0) {
+    const resolvedModules = rawRamEntries.map((mod) => {
+      // mod is e.g. "8GB 3200MHz AX4U32008G16A-BT41"
+      const match = mod.match(/^(\d+GB)\s+(\d+MHz)?\s*(.*)$/i);
+      if (match) {
+        const cap = match[1];
+        const spd = match[2] || "";
+        const part = match[3] || "";
+        return resolveRamCommercialName(part, spd, cap);
+      }
+      return mod;
+    });
+
+    // If all modules are the same model, summarize nicely (e.g. "16GB (2x8GB) 3200MHz ADATA XPG Spectrix D41 RGB")
+    if (resolvedModules.length >= 2 && resolvedModules.every((m) => m === resolvedModules[0])) {
+      const first = resolvedModules[0];
+      const match = first.match(/^(\d+)GB\s+(.*)$/i);
+      if (match) {
+        const singleCap = parseInt(match[1], 10);
+        const totalCap = singleCap * resolvedModules.length;
+        const rest = match[2];
+        result.ram = `${totalCap}GB (${resolvedModules.length}x${singleCap}GB) ${rest}`;
+      } else {
+        result.ram = resolvedModules.join(" + ");
+      }
+    } else {
+      result.ram = resolvedModules.join(" + ");
+    }
   }
 
   if (diskDrives.length > 0) {

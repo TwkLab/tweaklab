@@ -518,7 +518,7 @@ function NewTicketContent() {
             <div className="flex items-center gap-2">
               <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-twk-surface hover:bg-twk-card border border-twk-green/40 hover:border-twk-green text-[11px] font-mono text-twk-green transition-all shadow-twk-glow-sm">
                 <Upload className="w-3.5 h-3.5" />
-                <span>Importar Evidência do TWK Agent</span>
+                <span>Importar Diagnóstico .json</span>
                 <input
                   type="file"
                   accept=".json"

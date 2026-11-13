@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import {
-  Zap,
-  FileText,
   Terminal,
+  FileText,
+  Zap,
   CheckCircle2,
   Copy,
   Check,
@@ -13,6 +13,8 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  ClipboardPaste,
+  ShieldAlert,
 } from "lucide-react";
 import {
   detectBrowserSpecs,
@@ -28,21 +30,54 @@ interface ZeroInstallHardwareDetectorProps {
 export default function ZeroInstallHardwareDetector({
   onSpecsDetected,
 }: ZeroInstallHardwareDetectorProps) {
-  const [activeTab, setActiveTab] = useState<"browser" | "dxdiag" | "powershell">("browser");
+  const [activeTab, setActiveTab] = useState<"powershell" | "dxdiag" | "browser">("powershell");
   const [copiedCommand, setCopiedCommand] = useState(false);
   const [psInput, setPsInput] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [detectedSummary, setDetectedSummary] = useState<DetectedSpecs | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [isReadingClipboard, setIsReadingClipboard] = useState(false);
 
-  const psCommand = `powershell -Command "Get-CimInstance Win32_Processor | % { 'CPU: ' + $_.Name }; Get-CimInstance Win32_VideoController | % { 'GPU: ' + $_.Name }; Get-CimInstance Win32_PhysicalMemory | % { 'RAM: ' + [math]::round($_.Capacity/1GB) + 'GB ' + $_.Speed + 'MHz ' + $_.PartNumber }; Get-CimInstance Win32_DiskDrive | % { 'DISK: ' + $_.Model + ' (' + [math]::round($_.Size/1GB) + 'GB)' }; Get-CimInstance Win32_BaseBoard | % { 'BOARD: ' + $_.Manufacturer + ' ' + $_.Product }"`;
+  // Clean, robust PowerShell one-liner that saves directly to Windows clipboard
+  const psCommand =
+    '$c = (Get-CimInstance Win32_Processor).Name; ' +
+    '$g = (Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name -First 1); ' +
+    '$r = (Get-CimInstance Win32_PhysicalMemory | ForEach-Object { "$([math]::Round($_.Capacity/1GB))GB $($_.Speed)MHz $($_.PartNumber.Trim())" }) -join " + "; ' +
+    '$d = (Get-CimInstance Win32_DiskDrive | Select-Object -ExpandProperty Model) -join ", "; ' +
+    'Set-Clipboard -Value "CPU: $c`nGPU: $g`nRAM: $r`nDISK: $d"';
 
-  const handleBrowserDetect = () => {
-    const specs = detectBrowserSpecs();
-    setDetectedSummary(specs);
-    onSpecsDetected(specs);
-    setStatusMessage("Placa de vídeo e parâmetros do navegador detectados com sucesso!");
-    setTimeout(() => setStatusMessage(null), 4000);
+  const handleCopyPsCommand = () => {
+    navigator.clipboard.writeText(psCommand);
+    setCopiedCommand(true);
+    setTimeout(() => setCopiedCommand(false), 2500);
+  };
+
+  const handlePasteFromClipboard = async () => {
+    setIsReadingClipboard(true);
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && (text.includes("CPU:") || text.includes("GPU:") || text.includes("RAM:"))) {
+        handleParsePsInput(text);
+      } else {
+        alert("O clipboard não contém as especificações no formato esperado. Copie e execute o comando do PowerShell primeiro.");
+      }
+    } catch {
+      alert("Para colar automaticamente, permita o acesso ao clipboard no navegador ou cole o texto na caixa abaixo.");
+    } finally {
+      setIsReadingClipboard(false);
+    }
+  };
+
+  const handleParsePsInput = (val: string) => {
+    setPsInput(val);
+    if (!val.trim()) return;
+    const specs = parsePowerShellSpecs(val);
+    if (specs.cpu || specs.gpu || specs.ram || specs.storage) {
+      setDetectedSummary(specs);
+      onSpecsDetected(specs);
+      setStatusMessage("Nomes exatos das peças detectados e aplicados com sucesso!");
+      setTimeout(() => setStatusMessage(null), 4500);
+    }
   };
 
   const handleDxDiagUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +95,7 @@ export default function ZeroInstallHardwareDetector({
         }
         setDetectedSummary(specs);
         onSpecsDetected(specs);
-        setStatusMessage("Relatório DxDiag importado! Processador, Placa de Vídeo, RAM e Windows preenchidos.");
+        setStatusMessage("Relatório DxDiag importado! Processador, Placa de Vídeo, RAM e Windows preenchidos com os nomes reais.");
         setTimeout(() => setStatusMessage(null), 4500);
       } catch (err) {
         alert("Falha ao ler o arquivo DxDiag.");
@@ -69,22 +104,12 @@ export default function ZeroInstallHardwareDetector({
     reader.readAsText(file);
   };
 
-  const handleCopyPsCommand = () => {
-    navigator.clipboard.writeText(psCommand);
-    setCopiedCommand(true);
-    setTimeout(() => setCopiedCommand(false), 2500);
-  };
-
-  const handleParsePsInput = (val: string) => {
-    setPsInput(val);
-    if (!val.trim()) return;
-    const specs = parsePowerShellSpecs(val);
-    if (specs.cpu || specs.gpu || specs.ram || specs.storage) {
-      setDetectedSummary(specs);
-      onSpecsDetected(specs);
-      setStatusMessage("Especificações extraídas do PowerShell aplicadas com sucesso!");
-      setTimeout(() => setStatusMessage(null), 4000);
-    }
+  const handleBrowserDetect = () => {
+    const specs = detectBrowserSpecs();
+    setDetectedSummary(specs);
+    onSpecsDetected(specs);
+    setStatusMessage("Placa de vídeo e parâmetros do navegador detectados.");
+    setTimeout(() => setStatusMessage(null), 4000);
   };
 
   return (
@@ -97,11 +122,11 @@ export default function ZeroInstallHardwareDetector({
               Zero Instalação • 100% Web
             </span>
             <span className="text-xs font-bold text-twk-text font-mono">
-              Captura Rápida de Especificações
+              Captura das Peças Reais (Nomes e Modelos Exatos)
             </span>
           </div>
           <p className="text-[11px] text-twk-dim">
-            Suba as peças do seu PC direto no site sem precisar baixar nenhum executável (.exe).
+            Detecte os modelos exatos (Ryzen 5 / RTX 3090 / XPG Spectrix) sem baixar nenhum aplicativo (.exe).
           </p>
         </div>
 
@@ -111,22 +136,23 @@ export default function ZeroInstallHardwareDetector({
           className="text-[11px] font-mono text-twk-muted hover:text-twk-green flex items-center gap-1 self-start sm:self-auto cursor-pointer"
         >
           <Info className="w-3.5 h-3.5" />
-          <span>{showGuide ? "Ocultar Ajuda" : "Como funciona?"}</span>
+          <span>{showGuide ? "Ocultar Explicação" : "Por que não pelo navegador?"}</span>
           {showGuide ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
       </div>
 
       {/* Guide details */}
       {showGuide && (
-        <div className="p-3.5 rounded-xl bg-twk-bg/80 border border-twk-border/70 text-xs text-twk-muted font-mono space-y-2 leading-relaxed">
-          <p>
-            <strong className="text-twk-green">Por que não exigimos aplicativo?</strong> Sabemos que muitos usuários não gostam de baixar executáveis desconhecidos por segurança ou alertas do Windows SmartScreen.
+        <div className="p-3.5 rounded-xl bg-twk-bg/90 border border-twk-border/70 text-xs text-twk-muted font-mono space-y-2 leading-relaxed">
+          <p className="flex items-start gap-2">
+            <ShieldAlert className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <span>
+              <strong className="text-twk-text">Regra de Segurança dos Navegadores:</strong> Por normas internacionais da W3C, o Google Chrome, Edge e Firefox <strong>proíbem</strong> que sites leiam o nome da CPU e o modelo das memórias RAM por código puro do site (para evitar rastreamento de anúncios). O navegador só tem permissão de ver o número de núcleos (ex: 12 ou 16).
+            </span>
           </p>
-          <ul className="list-disc pl-4 space-y-1 text-[11px] text-twk-dim">
-            <li><strong>Opção 1 (Navegador):</strong> Lê diretamente via WebGL a sua Placa de Vídeo e núcleos do processador com 1 clique.</li>
-            <li><strong>Opção 2 (DxDiag):</strong> O Windows já tem o DxDiag pré-instalado de fábrica. Basta salvar o relatório em .txt e selecionar aqui. Não instala nada.</li>
-            <li><strong>Opção 3 (PowerShell):</strong> Um comando de 1 linha que você cola no seu próprio terminal do Windows para pegar detalhes como número de peça da memória RAM.</li>
-          </ul>
+          <p className="text-[11px] text-twk-dim pl-6">
+            Por isso, para puxar o nome comercial exato (como <strong>Ryzen 5 4600G</strong>, <strong>RTX 3090</strong> e <strong>XPG Spectrix D41</strong>) sem precisar instalar nenhum programa, oferecemos o comando rápido nativo do Windows (Opção 1) ou o relatório DxDiag oficial (Opção 2).
+          </p>
         </div>
       )}
 
@@ -134,19 +160,22 @@ export default function ZeroInstallHardwareDetector({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <button
           type="button"
-          onClick={() => setActiveTab("browser")}
+          onClick={() => setActiveTab("powershell")}
           className={`px-3 py-2.5 rounded-xl text-left border font-mono transition-all flex items-center gap-2.5 cursor-pointer ${
-            activeTab === "browser"
+            activeTab === "powershell"
               ? "bg-twk-card border-twk-green text-twk-text shadow-twk-glow-sm"
               : "bg-twk-surface border-twk-border text-twk-muted hover:text-twk-text"
           }`}
         >
           <div className="w-7 h-7 rounded-lg bg-twk-bg flex items-center justify-center text-twk-green flex-shrink-0">
-            <Zap className="w-4 h-4" />
+            <Terminal className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-xs font-bold">1. Pelo Navegador</div>
-            <div className="text-[10px] text-twk-dim">GPU + Cores (1 Clique)</div>
+            <div className="text-xs font-bold flex items-center gap-1.5">
+              <span>1. Comando Rápido</span>
+              <span className="text-[9px] px-1 rounded bg-twk-green text-twk-bg font-bold">100% Exato</span>
+            </div>
+            <div className="text-[10px] text-twk-dim">Copia direto pro Clipboard</div>
           </div>
         </button>
 
@@ -170,46 +199,89 @@ export default function ZeroInstallHardwareDetector({
 
         <button
           type="button"
-          onClick={() => setActiveTab("powershell")}
+          onClick={() => setActiveTab("browser")}
           className={`px-3 py-2.5 rounded-xl text-left border font-mono transition-all flex items-center gap-2.5 cursor-pointer ${
-            activeTab === "powershell"
+            activeTab === "browser"
               ? "bg-twk-card border-twk-green text-twk-text shadow-twk-glow-sm"
               : "bg-twk-surface border-twk-border text-twk-muted hover:text-twk-text"
           }`}
         >
           <div className="w-7 h-7 rounded-lg bg-twk-bg flex items-center justify-center text-amber-400 flex-shrink-0">
-            <Terminal className="w-4 h-4" />
+            <Zap className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-xs font-bold">3. Linha PowerShell</div>
-            <div className="text-[10px] text-twk-dim">1 Comando no Terminal</div>
+            <div className="text-xs font-bold">3. Leitura WebGL</div>
+            <div className="text-[10px] text-twk-dim">GPU + Cores (Apenas Web)</div>
           </div>
         </button>
       </div>
 
-      {/* Tab 1: Browser Auto-Detection */}
-      {activeTab === "browser" && (
+      {/* Tab 1: PowerShell 1-Liner with Auto-Clipboard */}
+      {activeTab === "powershell" && (
         <div className="p-4 rounded-xl bg-twk-bg/60 border border-twk-border space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h4 className="text-xs font-bold text-twk-text flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-twk-green" />
-                <span>Leitura Instantânea de Hardware pelo Navegador</span>
-              </h4>
-              <p className="text-[11px] text-twk-dim mt-0.5">
-                Detecta sua GPU dedicada via WebGL, quantidade de núcleos lógicos e resolução de tela sem nenhum download.
-              </p>
+          <div className="space-y-1">
+            <h4 className="text-xs font-bold text-twk-text flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-twk-green" />
+              <span>Puxar Nomes Exatos (Ryzen, RTX, XPG Spectrix) em 2 Passos:</span>
+            </h4>
+            <div className="text-[11px] text-twk-dim space-y-1 pt-1">
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-twk-surface border border-twk-border flex items-center justify-center text-[10px] font-bold text-twk-green">1</span>
+                <span>Copie o comando abaixo, abra o terminal do Windows (<kbd className="px-1.5 py-0.5 bg-twk-surface border border-twk-border rounded text-[10px] text-twk-text font-mono">Win + X, i</kbd> ou abra o PowerShell) e dê <kbd className="px-1.5 py-0.5 bg-twk-surface border border-twk-border rounded text-[10px] text-twk-text font-mono">Enter</kbd>. Ele copia tudo sozinho para o seu clipboard.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-twk-surface border border-twk-border flex items-center justify-center text-[10px] font-bold text-twk-green">2</span>
+                <span>Volte aqui e clique no botão verde <strong>"Colar Dados do Clipboard"</strong>. Pronto!</span>
+              </div>
             </div>
+          </div>
 
+          <div className="p-2.5 rounded-xl bg-twk-surface border border-twk-border flex items-center justify-between gap-3">
+            <code className="text-[11px] font-mono text-twk-green truncate flex-1 select-all">
+              {psCommand}
+            </code>
             <button
               type="button"
-              onClick={handleBrowserDetect}
-              className="px-4 py-2 rounded-xl bg-twk-green hover:bg-twk-green-hover text-twk-bg font-bold text-xs uppercase tracking-wider font-mono flex items-center justify-center gap-1.5 shadow-twk-glow-sm cursor-pointer transition-all flex-shrink-0"
+              onClick={handleCopyPsCommand}
+              className="px-3 py-1.5 rounded-lg bg-twk-card hover:bg-twk-surface border border-twk-border text-[11px] font-mono text-twk-text hover:text-twk-green flex items-center gap-1.5 transition-colors cursor-pointer flex-shrink-0"
             >
-              <Zap className="w-3.5 h-3.5" />
-              <span>Detectar Meu PC Agora</span>
+              {copiedCommand ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-twk-green" />
+                  <span className="text-twk-green font-bold">Comando Copiado!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copiar Comando</span>
+                </>
+              )}
             </button>
           </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={handlePasteFromClipboard}
+              disabled={isReadingClipboard}
+              className="px-5 py-2.5 rounded-xl bg-twk-green hover:bg-twk-green-hover text-twk-bg font-bold text-xs uppercase tracking-wider font-mono flex items-center justify-center gap-2 shadow-twk-glow-sm cursor-pointer transition-all"
+            >
+              <ClipboardPaste className="w-4 h-4" />
+              <span>Colar Dados do Clipboard Agora</span>
+            </button>
+
+            <span className="text-[10px] text-twk-dim font-mono text-center sm:text-left">
+              ou cole manualmente no campo abaixo:
+            </span>
+          </div>
+
+          <textarea
+            rows={2}
+            value={psInput}
+            onChange={(e) => handleParsePsInput(e.target.value)}
+            placeholder="Se preferir, pressione Ctrl + V aqui para colar a saída do comando..."
+            className="w-full px-3 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text font-mono focus:outline-none focus:border-twk-green/60"
+          />
         </div>
       )}
 
@@ -232,7 +304,7 @@ export default function ZeroInstallHardwareDetector({
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-4 h-4 rounded-full bg-twk-surface border border-twk-border flex items-center justify-center text-[10px] font-bold text-twk-green">3</span>
-                <span>Clique em <strong>"Salvar todas as informações..."</strong> e selecione o arquivo gerado abaixo:</span>
+                <span>Clique em <strong>"Salvar todas as informações..."</strong> e solte o arquivo <code className="text-cyan-400">DxDiag.txt</code> abaixo:</span>
               </div>
             </div>
           </div>
@@ -243,7 +315,7 @@ export default function ZeroInstallHardwareDetector({
               Clique para selecionar ou arraste o DxDiag.txt aqui
             </span>
             <span className="text-[10px] text-twk-dim font-mono">
-              Leitura local no navegador • Nenhum arquivo é enviado para servidores externos
+              Leitura 100% local no seu navegador • Nenhum arquivo é transmitido para servidores de terceiros
             </span>
             <input
               type="file"
@@ -255,53 +327,28 @@ export default function ZeroInstallHardwareDetector({
         </div>
       )}
 
-      {/* Tab 3: PowerShell 1-Liner */}
-      {activeTab === "powershell" && (
+      {/* Tab 3: Browser Auto-Detection */}
+      {activeTab === "browser" && (
         <div className="p-4 rounded-xl bg-twk-bg/60 border border-twk-border space-y-3">
-          <div>
-            <h4 className="text-xs font-bold text-twk-text flex items-center gap-1.5">
-              <Terminal className="w-3.5 h-3.5 text-amber-400" />
-              <span>Comando Rápido no PowerShell (Sem Instalar Nada)</span>
-            </h4>
-            <p className="text-[11px] text-twk-dim mt-0.5">
-              Ideal para quem quer detalhes precisos da placa-mãe, SSDs e part-number das memórias RAM.
-            </p>
-          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h4 className="text-xs font-bold text-twk-text flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <span>Leitura Limitada via Navegador (Apenas WebGL / Threads)</span>
+              </h4>
+              <p className="text-[11px] text-twk-dim mt-0.5 leading-relaxed">
+                O navegador só tem permissão de detectar a Placa de Vídeo e o número de núcleos lógicos (threads). Para preencher o nome do processador e o modelo da memória, use a <strong>Opção 1 (PowerShell)</strong> ou <strong>Opção 2 (DxDiag)</strong> acima.
+              </p>
+            </div>
 
-          <div className="p-2.5 rounded-xl bg-twk-surface border border-twk-border flex items-center justify-between gap-3">
-            <code className="text-[11px] font-mono text-twk-green truncate flex-1 select-all">
-              {psCommand}
-            </code>
             <button
               type="button"
-              onClick={handleCopyPsCommand}
-              className="px-3 py-1.5 rounded-lg bg-twk-card hover:bg-twk-surface border border-twk-border text-[11px] font-mono text-twk-text hover:text-twk-green flex items-center gap-1.5 transition-colors cursor-pointer flex-shrink-0"
+              onClick={handleBrowserDetect}
+              className="px-4 py-2 rounded-xl bg-twk-surface hover:bg-twk-card border border-twk-border hover:border-twk-green text-twk-text hover:text-twk-green font-bold text-xs uppercase tracking-wider font-mono flex items-center justify-center gap-1.5 cursor-pointer transition-all flex-shrink-0"
             >
-              {copiedCommand ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-twk-green" />
-                  <span className="text-twk-green font-bold">Copiado!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copiar Comando</span>
-                </>
-              )}
+              <Zap className="w-3.5 h-3.5" />
+              <span>Detectar GPU pelo Navegador</span>
             </button>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] text-twk-muted font-mono">
-              Cole a saída do PowerShell aqui para preencher o formulário:
-            </label>
-            <textarea
-              rows={2}
-              value={psInput}
-              onChange={(e) => handleParsePsInput(e.target.value)}
-              placeholder="Cole aqui o texto gerado pelo comando do PowerShell..."
-              className="w-full px-3 py-2 rounded-xl bg-twk-surface border border-twk-border text-xs text-twk-text font-mono focus:outline-none focus:border-amber-400/60"
-            />
           </div>
         </div>
       )}
@@ -316,45 +363,51 @@ export default function ZeroInstallHardwareDetector({
 
       {/* Detected Hardware Preview */}
       {detectedSummary && (
-        <div className="p-3 rounded-xl bg-twk-card border border-twk-green/30 text-xs font-mono space-y-1.5">
+        <div className="p-3.5 rounded-xl bg-twk-card border border-twk-green/40 text-xs font-mono space-y-2 shadow-twk-glow-sm">
           <div className="flex items-center justify-between text-[11px] text-twk-green font-bold">
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              Dados Detectados (Preenchimento Automático Concluído):
+              Especificações Reconhecidas (Campos Preenchidos Automaticamente):
             </span>
-            <span className="text-[10px] text-twk-dim uppercase">
-              {detectedSummary.detectionMethod}
+            <span className="text-[10px] text-twk-dim uppercase px-1.5 py-0.5 rounded bg-twk-surface border border-twk-border">
+              Origem: {detectedSummary.detectionMethod}
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-twk-muted pt-1">
-            {detectedSummary.gpu && (
-              <div>
-                <strong className="text-twk-text">GPU: </strong> {detectedSummary.gpu}
-              </div>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] text-twk-muted pt-1 border-t border-twk-border/50">
             {detectedSummary.cpu && (
               <div>
-                <strong className="text-twk-text">CPU: </strong> {detectedSummary.cpu}
+                <strong className="text-twk-text font-bold">Processador (CPU): </strong>
+                <span className="text-twk-green font-semibold">{detectedSummary.cpu}</span>
+              </div>
+            )}
+            {detectedSummary.gpu && (
+              <div>
+                <strong className="text-twk-text font-bold">Placa de Vídeo (GPU): </strong>
+                <span className="text-twk-green font-semibold">{detectedSummary.gpu}</span>
               </div>
             )}
             {detectedSummary.ram && (
               <div>
-                <strong className="text-twk-text">RAM: </strong> {detectedSummary.ram}
+                <strong className="text-twk-text font-bold">Memória RAM: </strong>
+                <span className="text-twk-green font-semibold">{detectedSummary.ram}</span>
               </div>
             )}
             {detectedSummary.os && (
               <div>
-                <strong className="text-twk-text">OS: </strong> {detectedSummary.os}
+                <strong className="text-twk-text font-bold">Sistema: </strong>
+                <span>{detectedSummary.os}</span>
               </div>
             )}
             {detectedSummary.motherboard && (
               <div>
-                <strong className="text-twk-text">Placa-mãe: </strong> {detectedSummary.motherboard}
+                <strong className="text-twk-text font-bold">Placa-mãe: </strong>
+                <span>{detectedSummary.motherboard}</span>
               </div>
             )}
             {detectedSummary.storage && (
               <div>
-                <strong className="text-twk-text">Armazenamento: </strong> {detectedSummary.storage}
+                <strong className="text-twk-text font-bold">Armazenamento: </strong>
+                <span>{detectedSummary.storage}</span>
               </div>
             )}
           </div>
